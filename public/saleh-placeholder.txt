@@ -1,3 +1,0 @@
-Place saleh.jpg here in the public/ folder.
-This photo will be used on the landing page, about page, and branding.
-The image should be Saleh grooming a dog (as provided by the user).
