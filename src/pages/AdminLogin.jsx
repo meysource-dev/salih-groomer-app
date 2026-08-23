@@ -11,9 +11,9 @@ export default function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true); setError(null);
     try {
@@ -36,14 +36,8 @@ export default function AdminLogin() {
         </div>
         <form onSubmit={handleSubmit} className="clay-card p-6 space-y-4">
           {error && <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-xl text-sm"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
-          <div>
-            <label className="block text-sm font-bold mb-1.5">نام کاربری</label>
-            <div className="relative"><User className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" /><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="نام کاربری" className="clay-input w-full pr-9 pl-4 py-2.5 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" required autoFocus /></div>
-          </div>
-          <div>
-            <label className="block text-sm font-bold mb-1.5">رمز عبور</label>
-            <div className="relative"><Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="رمز عبور" className="clay-input w-full pr-9 pl-4 py-2.5 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
-          </div>
+          <div><label className="block text-sm font-bold mb-1.5">نام کاربری</label><div className="relative"><User className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" /><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="نام کاربری" className="clay-input w-full pr-9 pl-4 py-2.5 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" required autoFocus /></div></div>
+          <div><label className="block text-sm font-bold mb-1.5">رمز عبور</label><div className="relative"><Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="رمز عبور" className="clay-input w-full pr-9 pl-4 py-2.5 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" required /></div></div>
           <button type="submit" disabled={isLoading || !username || !password} className="clay-btn bg-primary text-primary-foreground w-full py-3 font-bold inline-flex items-center justify-center gap-2 disabled:opacity-40">
             {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> در حال ورود...</> : <><Shield className="w-4 h-4" /> ورود به پنل</>}
           </button>

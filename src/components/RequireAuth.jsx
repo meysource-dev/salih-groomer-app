@@ -1,9 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
-export function RequireAuth({ children }: { children: ReactNode }) {
+export function RequireAuth({ children }) {
   const { isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
 
@@ -17,12 +16,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (!isAuthenticated) {
     const returnTo = `${location.pathname}${location.search}`;
-    return (
-      <Navigate
-        to={`/auth?returnTo=${encodeURIComponent(returnTo)}`}
-        replace
-      />
-    );
+    return <Navigate to={`/auth?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
 
   return children;

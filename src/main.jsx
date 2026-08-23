@@ -10,58 +10,56 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 import Navbar from "@/components/Navbar";
 
-const Landing = lazy(() => import("./pages/Landing.tsx"));
-const AuthPage = lazy(() => import("./pages/Auth.tsx"));
-const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
-const Booking = lazy(() => import("./pages/Booking.tsx"));
-const Contact = lazy(() => import("./pages/Contact.tsx"));
-const Portfolio = lazy(() => import("./pages/Portfolio.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
+const Landing = lazy(() => import("./pages/Landing"));
+const AuthPage = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Booking = lazy(() => import("./pages/Booking"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Portfolio = lazy(() => import("./pages/Portfolio"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 function RouteLoading() {
   return <div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
 }
 
-class ToolbarErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
+class ToolbarErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(err: Error) { console.warn("[VlyToolbar]", err.message); }
+  componentDidCatch(err) { console.warn("[VlyToolbar]", err.message); }
   render() { return this.state.hasError ? null : this.props.children; }
 }
 
-class RootErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; message: string; stack: string }> {
-  state = { hasError: false, message: "", stack: "" };
-  static getDerivedStateFromError(error: Error) { return { hasError: true, message: error.message || "Error", stack: error.stack || "" }; }
-  componentDidCatch(err: Error) { console.error("[Preview] Root crash:", err); }
+class RootErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, message: "", stack: "" }; }
+  static getDerivedStateFromError(error) { return { hasError: true, message: error.message || "Error", stack: error.stack || "" }; }
+  componentDidCatch(err) { console.error("[Preview] Root crash:", err); }
   render() {
-    if (this.state.hasError) {
-      return <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-6"><div className="max-w-lg text-center"><p className="text-sm font-semibold">Runtime error</p><p className="mt-2 text-xs text-muted-foreground break-words">{this.state.message}</p></div></div>;
-    }
+    if (this.state.hasError) return <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-6"><div className="max-w-lg text-center"><p className="text-sm font-semibold">Runtime error</p><p className="mt-2 text-xs text-muted-foreground break-words">{this.state.message}</p></div></div>;
     return this.props.children;
   }
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
 function RouteSyncer() {
   const location = useLocation();
   useEffect(() => { window.parent.postMessage({ type: "iframe-route-change", path: location.pathname }, "*"); }, [location.pathname]);
   useEffect(() => {
-    function handleMessage(event: MessageEvent) {
+    const handleMessage = (event) => {
       if (event.data?.type === "navigate") {
         if (event.data.direction === "back") window.history.back();
         if (event.data.direction === "forward") window.history.forward();
       }
-    }
+    };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
   return null;
 }
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root")).render(
   <StrictMode>
     <RootErrorBoundary>
       <ToolbarErrorBoundary><VlyToolbar /></ToolbarErrorBoundary>
@@ -70,18 +68,14 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
-              {/* Public routes with navbar */}
               <Route path="/" element={<><Navbar /><Landing /></>} />
               <Route path="/contact" element={<><Navbar /><Contact /></>} />
               <Route path="/portfolio" element={<><Navbar /><Portfolio /></>} />
               <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
               <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
               <Route path="/booking" element={<RequireAuth><Booking /></RequireAuth>} />
-
-              {/* Admin routes - completely separate */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
               <Route path="*" element={<><Navbar /><NotFound /></>} />
             </Routes>
           </Suspense>
