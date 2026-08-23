@@ -15,15 +15,13 @@ const schema = defineSchema(
       phone: v.optional(v.string()),
     }).index("email", ["email"]),
 
-    // Admin users with username/password
     admin_users: defineTable({
       username: v.string(),
-      passwordHash: v.string(), // SHA-256 hash
+      passwordHash: v.string(),
       name: v.optional(v.string()),
       isActive: v.boolean(),
     }).index("by_username", ["username"]),
 
-    // Grooming services
     services: defineTable({
       name: v.string(),
       nameEn: v.string(),
@@ -36,17 +34,15 @@ const schema = defineSchema(
       order: v.number(),
     }).index("by_active", ["isActive"]),
 
-    // Working hours per weekday
     work_hours: defineTable({
       weekday: v.number(),
       slots: v.array(v.string()),
       isActive: v.boolean(),
     }).index("by_weekday", ["weekday"]),
 
-    // Appointment bookings
     appointments: defineTable({
       userId: v.id("users"),
-      serviceId: v.id("services"),
+      serviceIds: v.array(v.id("services")),
       date: v.string(),
       time: v.string(),
       petName: v.string(),
@@ -55,7 +51,7 @@ const schema = defineSchema(
       petWeight: v.optional(v.number()),
       phone: v.string(),
       notes: v.optional(v.string()),
-      price: v.number(),
+      totalPrice: v.number(),
       status: v.union(
         v.literal("pending"),
         v.literal("confirmed"),
@@ -68,7 +64,6 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_status", ["status"]),
 
-    // Portfolio / gallery
     portfolio: defineTable({
       title: v.string(),
       description: v.optional(v.string()),
@@ -80,7 +75,6 @@ const schema = defineSchema(
       createdAt: v.number(),
     }).index("by_published", ["isPublished"]),
 
-    // Blog posts
     blog_posts: defineTable({
       title: v.string(),
       slug: v.string(),

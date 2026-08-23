@@ -178,7 +178,7 @@ export default function Landing() {
             <div>
               <h3 className="font-bold mb-3 text-sm">ارتباط با ما</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> ۰۹۱۲-XXX-XXXX</li>
+                <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> 0936-608-4319</li>
                 <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> تهران</li>
               </ul>
             </div>

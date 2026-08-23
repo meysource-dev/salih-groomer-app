@@ -11,10 +11,44 @@ export const list = query({
   },
 });
 
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("services").collect();
+  },
+});
+
 export const get = query({
   args: { id: v.id("services") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+// Admin: update service price
+export const updatePrice = mutation({
+  args: {
+    id: v.id("services"),
+    price: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { price: args.price });
+  },
+});
+
+// Admin: update service
+export const update = mutation({
+  args: {
+    id: v.id("services"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    price: v.optional(v.number()),
+    duration: v.optional(v.number()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...fields } = args;
+    await ctx.db.patch(id, fields);
   },
 });
 
@@ -75,7 +109,7 @@ export const seed = mutation({
       {
         name: "کوتاهی ناخن",
         nameEn: "Nail Trim",
-        description: "کوتاهی و صاف کردن ناخن‌ها",
+        description: "کوتاهی و صاف کردن ناخن\u200cها",
         price: 100000,
         duration: 20,
         petTypes: ["dog", "cat", "rabbit"],
@@ -86,7 +120,7 @@ export const seed = mutation({
       {
         name: "تخلیه کیسه مقعد",
         nameEn: "Anal Gland Expression",
-        description: "تخلیه و مراقبت کیسه مقعد (فقط سگ‌ها)",
+        description: "تخلیه و مراقبت کیسه مقعد (فقط سگ\u200cها)",
         price: 120000,
         duration: 15,
         petTypes: ["dog"],
@@ -97,7 +131,7 @@ export const seed = mutation({
       {
         name: "دیشیدینگ و باز کردن گره",
         nameEn: "Deshedding & Dematting",
-        description: "حذف موهای ریخته و باز کردن گره‌های مو",
+        description: "حذف موهای ریخته و باز کردن گره\u200cهای مو",
         price: 350000,
         duration: 60,
         petTypes: ["dog", "cat"],

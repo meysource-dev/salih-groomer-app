@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export const create = mutation({
   args: {
-    serviceId: v.id("services"),
+    serviceIds: v.array(v.id("services")),
     date: v.string(),
     time: v.string(),
     petName: v.string(),
@@ -12,13 +12,13 @@ export const create = mutation({
     petWeight: v.optional(v.number()),
     phone: v.string(),
     notes: v.optional(v.string()),
-    price: v.number(),
+    totalPrice: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = (await ctx.auth.getUserIdentity())?.subject;
     if (!userId) throw new Error("Not authenticated");
 
-    // Check for conflicting appointments
+    // Check for conflicting appointments on same date+time
     const existing = await ctx.db
       .query("appointments")
       .withIndex("by_date", (q) => q.eq("date", args.date))
@@ -26,9 +26,7 @@ export const create = mutation({
 
     const conflict = existing.find(
       (a) =>
-        a.time === args.time &&
-        a.status !== "cancelled" &&
-        a.serviceId === args.serviceId,
+        a.time === args.time && a.status !== "cancelled",
     );
     if (conflict) {
       throw new Error("این زمان قبلاً رزرو شده است");
@@ -36,7 +34,7 @@ export const create = mutation({
 
     const appointmentId = await ctx.db.insert("appointments", {
       userId: userId as any,
-      serviceId: args.serviceId,
+      serviceIds: args.serviceIds,
       date: args.date,
       time: args.time,
       petName: args.petName,
@@ -45,7 +43,7 @@ export const create = mutation({
       petWeight: args.petWeight,
       phone: args.phone,
       notes: args.notes,
-      price: args.price,
+      totalPrice: args.totalPrice,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -68,8 +66,12 @@ export const listByUser = query({
 
     const results = [];
     for (const apt of appointments) {
-      const service = await ctx.db.get(apt.serviceId);
-      results.push({ ...apt, service });
+      const services = [];
+      for (const sid of apt.serviceIds) {
+        const svc = await ctx.db.get(sid);
+        if (svc) services.push(svc);
+      }
+      results.push({ ...apt, services });
     }
     return results;
   },
@@ -85,8 +87,12 @@ export const listAll = query({
       .collect();
     const results = [];
     for (const apt of appointments) {
-      const service = await ctx.db.get(apt.serviceId);
-      results.push({ ...apt, service });
+      const services = [];
+      for (const sid of apt.serviceIds) {
+        const svc = await ctx.db.get(sid);
+        if (svc) services.push(svc);
+      }
+      results.push({ ...apt, services });
     }
     return results;
   },
