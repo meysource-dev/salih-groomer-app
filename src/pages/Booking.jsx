@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone } from "lucide-react";
 import { Link } from "react-router";
+import jalaali from "jalaali-js";
 
 const PERSIAN_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
 const PERSIAN_WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
@@ -13,55 +14,19 @@ function toPersianDigits(num) {
   return String(num).replace(/\d/g, (d) => pd[parseInt(d)]);
 }
 
-function gregorianToJalali(gy, gm, gd) {
-  const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-  let jy = gy <= 1600 ? 0 : 979;
-  let days =
-    365 * (gy - 621) +
-    Math.floor((gy - 621 + 3) / 4) -
-    Math.floor((gy - 621 + 99) / 100) +
-    Math.floor((gy - 621 + 399) / 400) +
-    gd +
-    g_d_m[gm - 1] +
-    (gm > 2 ? (gy % 4 === 0 && (gy % 100 !== 0 || gy % 400 === 0) ? 1 : 0) : -1);
-  jy = 979 + Math.floor(days / 12053);
-  days %= 12053;
-  jy += 4 * Math.floor(days / 1461);
-  days %= 1461;
-  if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
-  let jm, jd;
-  if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
-  else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
-  return [jy, jm, jd];
-}
-
-function jalaliToGregorian(jy, jm, jd) {
-  jy += 1595;
-  let days =
-    -355668 +
-    365 * jy +
-    Math.floor(jy / 33) * 8 +
-    Math.floor(((jy % 33) + 3) / 4) +
-    jd +
-    (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
-  const gy = 400 * Math.floor(days / 146097) + 100 * Math.floor(((days % 146097) + 100) / 146100) + Math.floor(((days % 146100) + 100) / 36525) + Math.floor(((days % 146100) % 36525 + 366) / 366);
-  const dayOfYear = days - (365 * Math.floor(days / 146097) + Math.floor(((days % 146097) + 100) / 146100) + Math.floor(((days % 146100) + 100) / 36525) + Math.floor(((days % 146100) % 36525 + 366) / 366) - 1);
-  const gm = dayOfYear < 182 ? 1 + Math.floor(dayOfYear / 31) : 7 + Math.floor((dayOfYear - 186) / 30);
-  const gd = dayOfYear - (gm < 7 ? (gm - 1) * 31 : (gm - 7) * 30 + 186) + 1;
-  return [gy, gm, gd];
-}
-
 function jalaliDaysInMonth(jy, jm) {
-  if (jm <= 6) return 31;
-  if (jm <= 11) return 30;
-  const leap = ((jy - 474) % 2820) < 21;
-  return leap ? 30 : 29;
+  return jalaali.jalaaliMonthLength(jy, jm);
 }
 
 function getFirstDayOfWeekJalali(jy, jm) {
-  const [gy, gm, gd] = jalaliToGregorian(jy, jm, 1);
-  const dow = new Date(gy, gm - 1, gd).getDay();
+  const g = jalaali.toGregorian(jy, jm, 1);
+  const dow = new Date(g.gy, g.gm - 1, g.gd).getDay();
   return (dow + 1) % 7;
+}
+
+function toJalaliDateStr(jy, jm, jd) {
+  const g = jalaali.toGregorian(jy, jm, jd);
+  return `${g.gy}-${String(g.gm).padStart(2, "0")}-${String(g.gd).padStart(2, "0")}`;
 }
 
 function validateIranianPhone(phone) {
@@ -81,11 +46,11 @@ function isServiceDisabled(service, selectedIds, allServices) {
 
 export default function Booking() {
   const now = new Date();
-  const todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const todayJalali = jalaali.toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
   // All useState hooks first
-  const [viewYear, setViewYear] = useState(todayJ[0]);
-  const [viewMonth, setViewMonth] = useState(todayJ[1]);
+  const [viewYear, setViewYear] = useState(todayJalali.jy);
+  const [viewMonth, setViewMonth] = useState(todayJalali.jm);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
@@ -129,14 +94,13 @@ export default function Booking() {
   );
 
   const isPast = (day) =>
-    viewYear < todayJ[0] ||
-    (viewYear === todayJ[0] && viewMonth < todayJ[1]) ||
-    (viewYear === todayJ[0] && viewMonth === todayJ[1] && day <= todayJ[2]);
+    viewYear < todayJalali.jy ||
+    (viewYear === todayJalali.jy && viewMonth < todayJalali.jm) ||
+    (viewYear === todayJalali.jy && viewMonth === todayJalali.jm && day <= todayJalali.jd);
 
   const handleDateClick = (day) => {
     if (isPast(day)) return;
-    const [gy, gm, gd] = jalaliToGregorian(viewYear, viewMonth, day);
-    setSelectedDate(`${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`);
+    setSelectedDate(toJalaliDateStr(viewYear, viewMonth, day));
     setSelectedTime(null);
   };
 
@@ -255,9 +219,8 @@ export default function Booking() {
             {calendarDays.map((day, i) => {
               if (day === null) return <div key={`e-${i}`} className="aspect-square" />;
               const past = isPast(day);
-              const [gy, gm, gd] = jalaliToGregorian(viewYear, viewMonth, day);
-              const dateStr = `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
-              const isToday = viewYear === todayJ[0] && viewMonth === todayJ[1] && day === todayJ[2];
+              const dateStr = toJalaliDateStr(viewYear, viewMonth, day);
+              const isToday = viewYear === todayJalali.jy && viewMonth === todayJalali.jm && day === todayJalali.jd;
               return (
                 <button key={`d-${i}`} onClick={() => !past && handleDateClick(day)} disabled={past}
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${past ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30" : selectedDate === dateStr ? "bg-primary text-primary-foreground shadow-md scale-105" : "hover:bg-secondary/60 hover:scale-105"}`}>
