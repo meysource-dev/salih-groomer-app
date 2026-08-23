@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5EC"/>
+      <stop offset="50%" stop-color="#FDE8D0"/>
+      <stop offset="100%" stop-color="#FCE4C8"/>
+    </linearGradient>
+    <linearGradient id="dogBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8A860"/>
+      <stop offset="100%" stop-color="#D4935A"/>
+    </linearGradient>
+    <linearGradient id="catBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B8B8B"/>
+      <stop offset="100%" stop-color="#6B6B6B"/>
+    </linearGradient>
+    <radialGradient id="blush" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F5A0A0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#F5A0A0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#C4703A" flood-opacity="0.15"/>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="500" rx="32" fill="url(#bg)"/>
+
+  <!-- Background decorative circles -->
+  <circle cx="80" cy="100" r="60" fill="#F5C88A" opacity="0.15"/>
+  <circle cx="420" cy="400" r="80" fill="#E8A060" opacity="0.1"/>
+  <circle cx="400" cy="80" r="40" fill="#D4935A" opacity="0.08"/>
+
+  <!-- Paw prints decoration -->
+  <g opacity="0.08" fill="#C4703A">
+    <circle cx="60" cy="420" r="10"/><circle cx="52" cy="412" r="4.5"/><circle cx="68" cy="412" r="4.5"/><circle cx="50" cy="422" r="4"/><circle cx="70" cy="422" r="4"/>
+    <circle cx="440" cy="100" r="8"/><circle cx="434" cy="94" r="3.5"/><circle cx="446" cy="94" r="3.5"/><circle cx="432" cy="102" r="3"/><circle cx="448" cy="102" r="3"/>
+    <circle cx="100" cy="60" r="7"/><circle cx="95" cy="55" r="3"/><circle cx="105" cy="55" r="3"/>
+  </g>
+
+  <!-- Heart decorations -->
+  <g opacity="0.12">
+    <path d="M380,160 c0,-8 -8,-14 -14,-14 c-6,0 -10,6 -10,6 s-4,-6 -10,-6 c-6,0 -14,6 -14,14 c0,14 14,24 24,32 c10,-8 24,-18 24,-32z" fill="#E8766A"/>
+    <path d="M140,380 c0,-6 -6,-10 -10,-10 c-4,0 -7,4 -7,4 s-3,-4 -7,-4 c-4,0 -10,4 -10,10 c0,10 10,17 17,22 c7,-5 17,-12 17,-22z" fill="#E8766A"/>
+  </g>
+
+  <!-- === DOG (golden retriever / Pomeranian style) === -->
+  <g filter="url(#shadow)" transform="translate(130, 140)">
+    <!-- Dog body - fluffy round -->
+    <ellipse cx="100" cy="170" rx="85" ry="80" fill="url(#dogBody)"/>
+    <!-- Fur texture -->
+    <ellipse cx="100" cy="170" rx="78" ry="73" fill="#EDA855" opacity="0.4"/>
+    <ellipse cx="100" cy="165" rx="70" ry="65" fill="#F0BC70" opacity="0.3"/>
+
+    <!-- Dog head -->
+    <circle cx="100" cy="65" r="55" fill="url(#dogBody)"/>
+    <!-- Face lighter area -->
+    <ellipse cx="100" cy="78" rx="35" ry="28" fill="#F0C87A" opacity="0.6"/>
+
+    <!-- Ears - floppy golden -->
+    <ellipse cx="52" cy="38" rx="20" ry="32" fill="#C88A40" transform="rotate(-15, 52, 38)"/>
+    <ellipse cx="54" cy="40" rx="14" ry="24" fill="#D49550" opacity="0.7" transform="rotate(-15, 54, 40)"/>
+    <ellipse cx="148" cy="38" rx="20" ry="32" fill="#C88A40" transform="rotate(15, 148, 38)"/>
+    <ellipse cx="146" cy="40" rx="14" ry="24" fill="#D49550" opacity="0.7" transform="rotate(15, 146, 40)"/>
+
+    <!-- Eyes -->
+    <circle cx="82" cy="58" r="8" fill="#3D2B1F"/>
+    <circle cx="118" cy="58" r="8" fill="#3D2B1F"/>
+    <circle cx="85" cy="55" r="3" fill="white" opacity="0.9"/>
+    <circle cx="121" cy="55" r="3" fill="white" opacity="0.9"/>
+
+    <!-- Nose -->
+    <ellipse cx="100" cy="75" rx="8" ry="5.5" fill="#3D2B1F"/>
+    <ellipse cx="100" cy="74" rx="3" ry="1.5" fill="#5D4B3F" opacity="0.5"/>
+
+    <!-- Mouth - happy smile -->
+    <path d="M88,82 Q100,95 112,82" stroke="#3D2B1F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Tongue sticking out -->
+    <ellipse cx="100" cy="90" rx="7" ry="9" fill="#E88080"/>
+    <ellipse cx="100" cy="88" rx="5" ry="6" fill="#F09090"/>
+
+    <!-- Blush cheeks -->
+    <circle cx="72" cy="72" r="12" fill="url(#blush)"/>
+    <circle cx="128" cy="72" r="12" fill="url(#blush)"/>
+
+    <!-- Dog front paw reaching toward cat -->
+    <ellipse cx="170" cy="200" rx="22" ry="18" fill="#EDA855" transform="rotate(-20, 170, 200)"/>
+    <circle cx="178" cy="190" r="5" fill="#E8A050"/>
+    <circle cx="170" cy="188" r="5" fill="#E8A050"/>
+    <circle cx="162" cy="192" r="4.5" fill="#E8A050"/>
+
+    <!-- Dog tail - fluffy wagging -->
+    <path d="M20,140 Q-15,100 5,70 Q20,95 30,120" fill="#E8A055" stroke="#D49050" stroke-width="1"/>
+    <path d="M18,145 Q-20,110 0,75 Q18,100 28,125" fill="#EDA855" opacity="0.5"/>
+  </g>
+
+  <!-- === CAT (gray tabby) === -->
+  <g filter="url(#shadow)" transform="translate(220, 150)">
+    <!-- Cat body -->
+    <ellipse cx="80" cy="165" rx="70" ry="72" fill="url(#catBody)"/>
+    <ellipse cx="80" cy="165" rx="62" ry="64" fill="#9A9A9A" opacity="0.3"/>
+
+    <!-- Cat head -->
+    <circle cx="80" cy="55" r="48" fill="url(#catBody)"/>
+    <!-- Face lighter area -->
+    <ellipse cx="80" cy="65" rx="30" ry="25" fill="#A8A8A8" opacity="0.4"/>
+
+    <!-- Ears - pointy cat ears -->
+    <path d="M42,25 L30,-10 L58,18Z" fill="#7A7A7A"/>
+    <path d="M44,22 L35,-2 L56,18Z" fill="#9A9A9A" opacity="0.5"/>
+    <path d="M118,25 L130,-10 L102,18Z" fill="#7A7A7A"/>
+    <path d="M116,22 L125,-2 L104,18Z" fill="#9A9A9A" opacity="0.5"/>
+    <!-- Inner ear -->
+    <path d="M44,20 L37,2 L55,16Z" fill="#D4A0A0" opacity="0.5"/>
+    <path d="M116,20 L123,2 L105,16Z" fill="#D4A0A0" opacity="0.5"/>
+
+    <!-- Eyes - big cute cat eyes -->
+    <ellipse cx="64" cy="48" rx="9" ry="10" fill="#4A6741"/>
+    <ellipse cx="96" cy="48" rx="9" ry="10" fill="#4A6741"/>
+    <circle cx="64" cy="48" r="5" fill="#2D3D28"/>
+    <circle cx="96" cy="48" r="5" fill="#2D3D28"/>
+    <!-- Eye highlights -->
+    <circle cx="67" cy="45" r="3.5" fill="white" opacity="0.85"/>
+    <circle cx="99" cy="45" r="3.5" fill="white" opacity="0.85"/>
+    <circle cx="62" cy="50" r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="94" cy="50" r="1.5" fill="white" opacity="0.5"/>
+
+    <!-- Nose - pink triangle -->
+    <path d="M77,64 L80,68 L83,64Z" fill="#E88080"/>
+
+    <!-- Mouth -->
+    <path d="M80,68 L80,73" stroke="#5A5A5A" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M72,75 Q80,82 88,75" stroke="#5A5A5A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Whiskers -->
+    <line x1="48" y1="62" x2="25" y2="58" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+    <line x1="48" y1="68" x2="22" y2="70" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+    <line x1="48" y1="74" x2="28" y2="82" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+    <line x1="112" y1="62" x2="135" y2="58" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+    <line x1="112" y1="68" x2="138" y2="70" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+    <line x1="112" y1="74" x2="132" y2="82" stroke="#8A8A8A" stroke-width="1" opacity="0.5"/>
+
+    <!-- Blush -->
+    <circle cx="52" cy="65" r="10" fill="url(#blush)"/>
+    <circle cx="108" cy="65" r="10" fill="url(#blush)"/>
+
+    <!-- Cat paw reaching toward dog -->
+    <ellipse cx="10" cy="195" rx="18" ry="15" fill="#8A8A8A" transform="rotate(25, 10, 195)"/>
+    <circle cx="2" cy="188" r="4" fill="#7A7A7A"/>
+    <circle cx="10" cy="185" r="4" fill="#7A7A7A"/>
+    <circle cx="18" cy="188" r="3.5" fill="#7A7A7A"/>
+
+    <!-- Cat tail - curvy -->
+    <path d="M145,150 Q175,120 180,80 Q170,100 160,130" fill="#7A7A7A"/>
+    <path d="M148,155 Q180,125 185,85 Q172,105 162,135" fill="#8A8A8A" opacity="0.5"/>
+  </g>
+
+  <!-- Hugging arms overlay - dog's arm around cat -->
+  <path d="M260,290 Q290,270 310,280 Q300,300 280,310" fill="#EDA855" opacity="0.8" stroke="#D49050" stroke-width="1"/>
+
+  <!-- Cat's arm around dog -->
+  <path d="M245,295 Q220,275 210,285 Q215,305 235,310" fill="#8A8A8A" opacity="0.7" stroke="#7A7A7A" stroke-width="1"/>
+
+  <!-- Heart between them -->
+  <g transform="translate(250, 200)">
+    <path d="M0,-8 c0,-12 -12,-18 -18,-18 c-6,0 -10,4 -10,4 s-4,-4 -10,-4 c-6,0 -18,6 -18,18 c0,20 18,32 28,40 c10,-8 28,-20 28,-40z" fill="#E8766A" opacity="0.7" transform="scale(0.7) translate(36,12)"/>
+  </g>
+
+  <!-- Sparkle decorations -->
+  <g opacity="0.2" fill="#C4703A">
+    <path d="M90,320 l3,-8 3,8 8,3 -8,3 -3,8 -3,-8 -8,-3z"/>
+    <path d="M400,250 l2,-6 2,6 6,2 -6,2 -2,6 -2,-6 -6,-2z"/>
+    <path d="M160,440 l2.5,-7 2.5,7 7,2.5 -7,2.5 -2.5,7 -2.5,-7 -7,-2.5z"/>
+  </g>
+
+  <!-- Text -->
+  <text x="250" y="470" text-anchor="middle" font-family="Tahoma, Arial" font-size="20" font-weight="bold" fill="#8B5E3C" opacity="0.5">صالح گرومر 🐾</text>
+</svg>
