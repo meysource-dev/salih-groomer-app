@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone } from "lucide-react";
 import { Link } from "react-router";
 
-const PERSIAN_MONTHS = ["\u0641\u0631\u0648\u0631\u062f\u06cc\u0646", "\u0627\u0631\u062f\u06cc\u0628\u0647\u0634\u062a", "\u062e\u0631\u062f\u0627\u062f", "\u062a\u06cc\u0631", "\u0645\u0631\u062f\u0627\u062f", "\u0634\u0647\u0631\u06cc\u0648\u0631", "\u0645\u0647\u0631", "\u0622\u0628\u0627\u0646", "\u0622\u0630\u0631", "\u062f\u06cc", "\u0628\u0647\u0645\u0646", "\u0627\u0633\u0641\u0646\u062f"];
-const PERSIAN_WEEKDAYS = ["\u0634\u0646\u0628\u0647", "\u06cc\u06a9\u0634\u0646\u0628\u0647", "\u062f\u0648\u0634\u0646\u0628\u0647", "\u0633\u0647\u200c\u0634\u0646\u0628\u0647", "\u0686\u0647\u0627\u0631\u0634\u0646\u0628\u0647", "\u067e\u0646\u062c\u0634\u0646\u0628\u0647", "\u062c\u0645\u0639\u0647"];
+const PERSIAN_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+const PERSIAN_WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
 
 function toPersianDigits(num) {
-  const pd = ["\u06f0", "\u06f1", "\u06f2", "\u06f3", "\u06f4", "\u06f5", "\u06f6", "\u06f7", "\u06f8", "\u06f9"];
+  const pd = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
   return String(num).replace(/\d/g, (d) => pd[parseInt(d)]);
 }
 
@@ -146,13 +146,13 @@ export default function Booking() {
   const handlePhoneChange = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11);
     setPhone(digits);
-    setPhoneError(digits.length === 11 && !validateIranianPhone(digits) ? "\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0645\u062b\u0627\u0644: 09121234567)" : "");
+    setPhoneError(digits.length === 11 && !validateIranianPhone(digits) ? "شماره موبایل نامعتبر است (مثال: 09121234567)" : "");
   };
 
   const handleSubmit = async () => {
     if (selectedServiceIds.length === 0 || !selectedDate || !selectedTime || !petName) return;
     if (!phone || !validateIranianPhone(phone)) {
-      setPhoneError("\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0628\u0627\u06cc\u062f 11 \u0631\u0642\u0645 \u0648 09 \u0634\u0631\u0648\u0639 \u0634\u0648\u062f)");
+      setPhoneError("شماره موبایل نامعتبر است (باید 11 رقم و با 09 شروع شود)");
       return;
     }
     setIsSubmitting(true);
@@ -172,7 +172,7 @@ export default function Booking() {
       });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "\u062e\u0637\u0627 \u062f\u0631 \u062b\u0628\u062a \u0646\u0648\u0628\u062a");
+      setError(err instanceof Error ? err.message : "خطا در ثبت نوبت");
     } finally {
       setIsSubmitting(false);
     }
@@ -197,12 +197,12 @@ export default function Booking() {
           <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-emerald-100 to-emerald-50 clay-blob flex items-center justify-center mb-6">
             <Check className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-2xl font-black mb-3">{"\u0646\u0648\u0628\u062a \u062b\u0628\u062a \u0634\u062f!"} {"\ud83c\udf89"}</h2>
+          <h2 className="text-2xl font-black mb-3">نوبت ثبت شد! 🎉</h2>
           <p className="text-muted-foreground mb-6">
-            {"\u0646\u0648\u0628\u062ت"} {petName} {"\u0639\u0632\u06cc\u0632 \u062b\u0628\u062a \u0634\u062f. \u0628\u0627 \u0634\u0645\u0627\u0631\u0647"} {toPersianDigits(phone)} {"\u062a\u0645\u0627\u0633 \u06af\u0631\u0641\u062a\u0647 \u0645\u06cc\u200c\u0634\u0648\u062f."}
+            نوبت {petName} عزیز ثبت شد. با شماره {toPersianDigits(phone)} تماس گرفته می‌شود.
           </p>
           <Link to="/" className="clay-btn bg-primary text-primary-foreground px-6 py-3 font-bold inline-flex items-center justify-center gap-2 w-full">
-            {"\u0628\u0627\u0632\u06af\u0634\u062a \u0628\u0647 \u0635\u0641\u062d\u0647 \u0627\u0635\u0644\u06cc"}
+            بازگشت به صفحه اصلی
           </Link>
         </motion.div>
       </div>
@@ -225,10 +225,10 @@ export default function Booking() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-4">
-            <ArrowRight className="w-4 h-4" /> {"\u0628\u0627\u0632\u06af\u0634\u062a"}
+            <ArrowRight className="w-4 h-4" /> بازگشت
           </Link>
           <h1 className="text-3xl md:text-4xl font-black">
-            {"\u0631\u0632\u0631\u0648"} <span className="bg-gradient-to-l from-primary to-amber-500 bg-clip-text text-transparent">{"\u0646\u0648\u0628\u062a"}</span>
+            رزرو <span className="bg-gradient-to-l from-primary to-amber-500 bg-clip-text text-transparent">نوبت</span>
           </h1>
         </div>
 
@@ -259,7 +259,7 @@ export default function Booking() {
                 <button key={`d-${i}`} onClick={() => !past && handleDateClick(day)} disabled={past}
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${past ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30" : selectedDate === dateStr ? "bg-primary text-primary-foreground shadow-md scale-105" : "hover:bg-secondary/60 hover:scale-105"}`}>
                   {toPersianDigits(day)}
-                  {isToday && <span className="text-[8px] text-primary/60 mt-0.5">{"\u0627\u0645\u0631\u0648\u0632"}</span>}
+                  {isToday && <span className="text-[8px] text-primary/60 mt-0.5">امروز</span>}
                 </button>
               );
             })}
@@ -272,7 +272,7 @@ export default function Booking() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="clay-card p-6 mb-8 overflow-hidden">
               <div className="flex items-center gap-2 mb-4">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h3 className="font-bold">{"\u0633\u0627\u0639\u062a\u200c\u0647\u0627\u06cc \u0642\u0627\u0628\u0644 \u0631\u0632\u0631\u0648"}</h3>
+                <h3 className="font-bold">ساعت‌های قابل رزرو</h3>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"].map((time) => {
@@ -293,12 +293,12 @@ export default function Booking() {
         {selectedDate && selectedTime && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="clay-card p-6 mb-8">
             <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <PawPrint className="w-5 h-5 text-primary" /> {"\u0641\u0631\u0645 \u0631\u0632\u0631\u0648"}
+              <PawPrint className="w-5 h-5 text-primary" /> فرم رزرو
             </h3>
             <div className="space-y-5">
               {/* Multi-Service Selection */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u062e\u062f\u0645\u062a\u200c\u0647\u0627 \u0631\u0627 \u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f *"} ({toPersianDigits(selectedServiceIds.length)} {"\u0645\u0648\u0631\u062f"})</label>
+                <label className="block text-sm font-bold mb-2">خدمات را انتخاب کنید * ({toPersianDigits(selectedServiceIds.length)} مورد)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {services.map((s) => {
                     const disabled = isServiceDisabled(s, selectedServiceIds, services);
@@ -309,7 +309,7 @@ export default function Booking() {
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-bold text-sm">{s.name}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">{toPersianDigits(s.price.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{toPersianDigits(s.price.toLocaleString())} تومان</div>
                           </div>
                           <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selected ? "bg-primary border-primary" : "border-border"}`}>
                             {selected && <Check className="w-3 h-3 text-white" />}
@@ -323,9 +323,9 @@ export default function Booking() {
 
               {/* Pet Type */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u0646\u0648\u0639 \u062d\u06cc\u0648\u0627\u0646 *"}</label>
+                <label className="block text-sm font-bold mb-2">نوع حیوان *</label>
                 <div className="flex gap-2">
-                  {[["dog", "\ud83d\udc15 \u0633\u06af"], ["cat", "\ud83d\udc08 \u06af\u0631\u0628\u0647"], ["rabbit", "\ud83d\udc07 \u062e\u0631\u06af\u0648\u0634"]].map(([v, l]) => (
+                  {[["dog", "🐕 سگ"], ["cat", "🐈 گربه"], ["rabbit", "🐇 خرگوش"]].map(([v, l]) => (
                     <button key={v} onClick={() => setPetType(v)} className={`clay-card flex-1 py-3 text-center text-sm font-bold transition-all ${petType === v ? "ring-2 ring-primary" : "hover:bg-secondary/50"}`}>
                       {l}
                     </button>
@@ -335,13 +335,13 @@ export default function Booking() {
 
               {/* Pet Name */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u0646\u0627\u0645 \u062d\u06cc\u0648\u0627\u0646 *"}</label>
-                <input type="text" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder={"\u0645\u062b\u0644\u0627\u064b \u067e\u067e\u06cc"} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">نام حیوان *</label>
+                <input type="text" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder="مثلاً پپی" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 *"}</label>
+                <label className="block text-sm font-bold mb-2">شماره موبایل *</label>
                 <div className="relative">
                   <Phone className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                   <input type="tel" value={phone} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="09121234567" dir="ltr" maxLength={11} className={`clay-input w-full pr-9 pl-4 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-primary ${phoneError ? "border-red-400" : ""}`} />
@@ -349,42 +349,42 @@ export default function Booking() {
                 {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                 {!phoneError && phone.length === 11 && validateIranianPhone(phone) && (
                   <p className="text-emerald-600 text-xs mt-1 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> {"\u0634\u0645\u0627\u0631\u0647 \u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a"}
+                    <Check className="w-3 h-3" /> شماره معتبر است
                   </p>
                 )}
               </div>
 
               {/* Breed */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u0646\u0632\u0627\u062f (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)"}</label>
-                <input type="text" value={petBreed} onChange={(e) => setPetBreed(e.target.value)} placeholder={"\u0645\u062b\u0644\u0627\u064b Pomeranian"} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">نژاد (اختیاری)</label>
+                <input type="text" value={petBreed} onChange={(e) => setPetBreed(e.target.value)} placeholder="مثلاً Pomeranian" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Weight */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u0639\u0646\u0648\u0627\u0646 (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)"}</label>
-                <input type="number" value={petWeight} onChange={(e) => setPetWeight(e.target.value)} placeholder={"\u06a9\u06cc\u0644\u0648\u06af\u0631\u0645"} min="0" max="100" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">وزن (اختیاری)</label>
+                <input type="number" value={petWeight} onChange={(e) => setPetWeight(e.target.value)} placeholder="کیلوگرم" min="0" max="100" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-bold mb-2">{"\u062a\u0648\u0636\u06cc\u062d\u0627\u062a"}</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={"\u0648\u06cc\u0698\u06af\u06cc\u200c\u0647\u0627\u06cc \u0627\u062e\u0644\u0627\u0642\u06cc \u067e\u062a \u062e\u0648\u062f \u0631\u0627 \u0628\u0646\u0648\u06cc\u0633\u06cc\u062f..."} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                <label className="block text-sm font-bold mb-2">توضیحات</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="ویژگی‌های اخلاقی پت خود را بنویسید..." className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
               </div>
 
               {/* Selected Services Summary & Total Price */}
               {selectedServiceIds.length > 0 && (
                 <div className="clay-card p-4 bg-gradient-to-l from-primary/5 to-amber-50/50">
-                  <div className="text-sm font-bold mb-2">{"\u062e\u062f\u0645\u062a\u200c\u0647\u0627\u06cc \u0627\u0646\u062a\u062e\u0627\u0628 \u0634\u062f\u0647:"}</div>
+                  <div className="text-sm font-bold mb-2">خدمات انتخاب شده:</div>
                   {selectedServiceDataList.map((s) => (
                     <div key={s._id} className="flex items-center justify-between text-sm py-1">
                       <span className="text-muted-foreground">{s.name}</span>
-                      <span className="font-bold">{toPersianDigits(s.price.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</span>
+                      <span className="font-bold">{toPersianDigits(s.price.toLocaleString())} تومان</span>
                     </div>
                   ))}
                   <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
-                    <span className="font-bold">{"\u062c\u0645\u0639 \u0642\u0628\u0644 \u062a\u062e\u0635\u0635"}</span>
-                    <span className="text-xl font-black text-primary">{toPersianDigits(totalPrice.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</span>
+                    <span className="font-bold">جمع قابل تخصیص</span>
+                    <span className="text-xl font-black text-primary">{toPersianDigits(totalPrice.toLocaleString())} تومان</span>
                   </div>
                 </div>
               )}
@@ -402,9 +402,9 @@ export default function Booking() {
             <div className="flex justify-start mt-6">
               <button onClick={handleSubmit} disabled={!canSubmit} className="clay-btn bg-primary text-primary-foreground px-10 py-3 font-bold inline-flex items-center gap-2 disabled:opacity-40">
                 {isSubmitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> {"\u062f\u0631 \u062d\u0627\u0644 \u062b\u0628\u062a..."}</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> در حال ثبت...</>
                 ) : (
-                  <>{"\u062b\u0628\u062a \u0646\u0648\u0628\u062a"} <Check className="w-4 h-4" /></>
+                  <>ثبت نوبت <Check className="w-4 h-4" /></>
                 )}
               </button>
             </div>
