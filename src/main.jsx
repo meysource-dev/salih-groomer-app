@@ -8,6 +8,7 @@ import React, { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
+import "./styles/components.css";
 import Navbar from "@/components/Navbar";
 
 const Landing = lazy(() => import("./pages/Landing"));

@@ -1,0 +1,402 @@
+/* ===================================
+   Saleh Groomer – Component Styles
+   Modular CSS for Claymorphism theme
+   =================================== */
+
+/* --- Clay Card Variants --- */
+.clay-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 4px 14px 0 oklch(0.7 0.06 60 / 0.2),
+    0 1px 3px 0 oklch(0.7 0.04 60 / 0.08),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+}
+
+.clay-card-hover {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 4px 14px 0 oklch(0.7 0.06 60 / 0.2),
+    0 1px 3px 0 oklch(0.7 0.04 60 / 0.08),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clay-card-hover:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 12px 28px 0 oklch(0.7 0.06 60 / 0.25),
+    0 4px 10px 0 oklch(0.7 0.04 60 / 0.12),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.7);
+}
+
+/* --- Clay Button --- */
+.clay-btn {
+  border-radius: 1rem;
+  box-shadow:
+    0 3px 10px 0 oklch(0.55 0.14 40 / 0.3),
+    0 1px 3px 0 oklch(0.55 0.14 40 / 0.12),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 16px 0 oklch(0.55 0.14 40 / 0.35),
+    0 2px 5px 0 oklch(0.55 0.14 40 / 0.15),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.4);
+}
+
+.clay-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 4px 0 oklch(0.55 0.14 40 / 0.2),
+    inset 0 2px 4px 0 oklch(0.55 0.14 40 / 0.08);
+}
+
+/* --- Clay Input --- */
+.clay-input {
+  border-radius: 1rem;
+  box-shadow:
+    inset 0 2px 4px 0 oklch(0.7 0.03 60 / 0.15),
+    0 1px 0 0 oklch(1 0 0 / 0.5);
+  background: var(--card);
+}
+
+/* --- Clay Blob (circular element) --- */
+.clay-blob {
+  border-radius: 50%;
+  box-shadow:
+    0 8px 24px 0 oklch(0.7 0.06 60 / 0.25),
+    inset 0 2px 0 0 oklch(1 0 0 / 0.5);
+}
+
+/* --- Page Layouts --- */
+.page-container {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.page-section {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.page-section-lg {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+/* --- Section Spacing (tighter) --- */
+.section-gap {
+  gap: 2rem;
+}
+
+.section-gap-sm {
+  gap: 1.25rem;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  overflow: hidden;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 5rem;
+  }
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+  max-width: 36rem;
+}
+
+/* --- Grid Layouts --- */
+.grid-services {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-services {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-services {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-services {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.grid-features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .grid-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-features {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* --- Calendar Grid --- */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+/* --- Text Utilities --- */
+.text-gradient-primary {
+  background: linear-gradient(to left, var(--primary), #e8945a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* --- Decorative Blobs --- */
+.deco-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.deco-blob-1 {
+  width: 20rem;
+  height: 20rem;
+  background: linear-gradient(to bottom right, oklch(0.85 0.06 60 / 0.4), oklch(0.9 0.04 70 / 0.3));
+  filter: blur(3rem);
+  top: -5rem;
+  right: -5rem;
+}
+
+.deco-blob-2 {
+  width: 24rem;
+  height: 24rem;
+  background: linear-gradient(to top left, oklch(0.93 0.03 70 / 0.3), oklch(0.95 0.02 80 / 0.2));
+  filter: blur(3rem);
+  bottom: -8rem;
+  left: -8rem;
+}
+
+/* --- CTA Section --- */
+.cta-card {
+  background: linear-gradient(to bottom right, oklch(0.97 0.008 40 / 0.05), var(--card), oklch(0.97 0.01 60 / 0.05));
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-card::before,
+.cta-card::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cta-card::before {
+  width: 10rem;
+  height: 10rem;
+  background: oklch(0.55 0.14 40 / 0.05);
+  filter: blur(1.5rem);
+  top: -2.5rem;
+  left: -2.5rem;
+}
+
+.cta-card::after {
+  width: 12rem;
+  height: 12rem;
+  background: oklch(0.9 0.04 60 / 0.3);
+  filter: blur(1.5rem);
+  bottom: -2.5rem;
+  right: -2.5rem;
+}
+
+/* --- Footer --- */
+.footer {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  border-top: 1px solid oklch(0.9 0.02 60 / 0.5);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- Navbar --- */
+.navbar-glass {
+  background: oklch(1 0 0 / 0.6);
+  backdrop-filter: blur(0.75rem);
+  border: 1px solid oklch(0.9 0.02 60 / 0.3);
+}
+
+.navbar-glass-scrolled {
+  background: oklch(1 0 0 / 0.8);
+  backdrop-filter: blur(1rem);
+  box-shadow: 0 4px 14px 0 oklch(0 0 0 / 0.1);
+  border: 1px solid oklch(0.9 0.02 60 / 0.5);
+}
+
+/* --- Service Card --- */
+.service-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+}
+
+.service-card-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 8px 0 oklch(0 0 0 / 0.1);
+}
+
+.service-card-price {
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: var(--primary);
+  padding-top: 0.5rem;
+  border-top: 1px solid oklch(0.9 0.02 60 / 0.5);
+}
+
+/* --- Booking Form --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .form-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.form-grid-8 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .form-grid-8 {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+/* --- Status Badges --- */
+.badge-pending {
+  color: oklch(0.6 0.15 70);
+  background: oklch(0.95 0.03 70);
+}
+
+.badge-confirmed {
+  color: oklch(0.55 0.15 160);
+  background: oklch(0.95 0.03 160);
+}
+
+.badge-cancelled {
+  color: oklch(0.55 0.2 25);
+  background: oklch(0.95 0.03 25);
+}
+
+.badge-completed {
+  color: oklch(0.5 0.12 250);
+  background: oklch(0.95 0.03 250);
+}
