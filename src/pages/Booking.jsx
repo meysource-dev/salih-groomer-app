@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone, X } from "lucide-react";
+import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone } from "lucide-react";
 import { Link } from "react-router";
 
 const PERSIAN_MONTHS = ["\u0641\u0631\u0648\u0631\u062f\u06cc\u0646", "\u0627\u0631\u062f\u06cc\u0628\u0647\u0634\u062a", "\u062e\u0631\u062f\u0627\u062f", "\u062a\u06cc\u0631", "\u0645\u0631\u062f\u0627\u062f", "\u0634\u0647\u0631\u06cc\u0648\u0631", "\u0645\u0647\u0631", "\u0622\u0628\u0627\u0646", "\u0622\u0630\u0631", "\u062f\u06cc", "\u0628\u0647\u0645\u0646", "\u0627\u0633\u0641\u0646\u062f"];
@@ -13,11 +13,9 @@ function toPersianDigits(num) {
   return String(num).replace(/\d/g, (d) => pd[parseInt(d)]);
 }
 
-// Fixed Jalali/Gregorian conversion functions
 function gregorianToJalali(gy, gm, gd) {
   const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
   let jy = gy <= 1600 ? 0 : 979;
-  const gyOffset = gy > 1600 ? 0 : 0;
   let days =
     365 * (gy - 621) +
     Math.floor((gy - 621 + 3) / 4) -
@@ -26,30 +24,18 @@ function gregorianToJalali(gy, gm, gd) {
     gd +
     g_d_m[gm - 1] +
     (gm > 2 ? (gy % 4 === 0 && (gy % 100 !== 0 || gy % 400 === 0) ? 1 : 0) : -1);
-
   jy = 979 + Math.floor(days / 12053);
   days %= 12053;
   jy += 4 * Math.floor(days / 1461);
   days %= 1461;
-  if (days > 365) {
-    jy += Math.floor((days - 1) / 365);
-    days = (days - 1) % 365;
-  }
-
+  if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
   let jm, jd;
-  if (days < 186) {
-    jm = 1 + Math.floor(days / 31);
-    jd = 1 + (days % 31);
-  } else {
-    jm = 7 + Math.floor((days - 186) / 30);
-    jd = 1 + ((days - 186) % 30);
-  }
-
+  if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
+  else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
   return [jy, jm, jd];
 }
 
 function jalaliToGregorian(jy, jm, jd) {
-  // Adjust for 2820-year cycle
   jy += 1595;
   let days =
     -355668 +
@@ -58,23 +44,16 @@ function jalaliToGregorian(jy, jm, jd) {
     Math.floor(((jy % 33) + 3) / 4) +
     jd +
     (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
-
   const gy = 400 * Math.floor(days / 146097) + 100 * Math.floor(((days % 146097) + 100) / 146100) + Math.floor(((days % 146100) + 100) / 36525) + Math.floor(((days % 146100) % 36525 + 366) / 366);
-
   const dayOfYear = days - (365 * Math.floor(days / 146097) + Math.floor(((days % 146097) + 100) / 146100) + Math.floor(((days % 146100) + 100) / 36525) + Math.floor(((days % 146100) % 36525 + 366) / 366) - 1);
-
   const gm = dayOfYear < 182 ? 1 + Math.floor(dayOfYear / 31) : 7 + Math.floor((dayOfYear - 186) / 30);
   const gd = dayOfYear - (gm < 7 ? (gm - 1) * 31 : (gm - 7) * 30 + 186) + 1;
-
   return [gy, gm, gd];
 }
 
 function jalaliDaysInMonth(jy, jm) {
   if (jm <= 6) return 31;
   if (jm <= 11) return 30;
-  // Esfand: 30 in leap years, 29 otherwise
-  const [gy] = jalaliToGregorian(jy, 12, 1);
-  // Leap year in Jalali: (years since 474) % 2820 < 21, simplified
   const leap = ((jy - 474) % 2820) < 21;
   return leap ? 30 : 29;
 }
@@ -82,7 +61,6 @@ function jalaliDaysInMonth(jy, jm) {
 function getFirstDayOfWeekJalali(jy, jm) {
   const [gy, gm, gd] = jalaliToGregorian(jy, jm, 1);
   const dow = new Date(gy, gm - 1, gd).getDay();
-  // Convert: JS Sunday=0 -> we want Saturday=0
   return (dow + 1) % 7;
 }
 
@@ -90,31 +68,20 @@ function validateIranianPhone(phone) {
   return /^09\d{9}$/.test(phone);
 }
 
-// Service conflict logic:
-// If "combined" (order 4) is selected, disable scissors (order 2) and clipper (order 3)
-// If scissors or clipper is selected, disable combined
 function isServiceDisabled(service, selectedIds, allServices) {
   if (selectedIds.length === 0) return false;
   const selectedServices = allServices.filter((s) => selectedIds.includes(s._id));
   const hasCombined = selectedServices.some((s) => s.order === 4);
   const hasScissors = selectedServices.some((s) => s.order === 2);
   const hasClipper = selectedServices.some((s) => s.order === 3);
-
-  if (service.order === 4) {
-    // Combined: disabled if scissors or clipper already selected
-    return hasScissors || hasClipper;
-  }
-  if (service.order === 2 || service.order === 3) {
-    // Scissors/Clipper: disabled if combined already selected
-    return hasCombined;
-  }
+  if (service.order === 4) return hasScissors || hasClipper;
+  if (service.order === 2 || service.order === 3) return hasCombined;
   return false;
 }
 
 export default function Booking() {
   const services = useQuery(api.services.list);
   const createAppointment = useMutation(api.appointments.create);
-  const sendEmail = useAction(api.sendEmail.sendBookingNotification);
   const bookedSlots = useQuery(
     api.appointments.getBookedSlots,
     selectedDate ? { date: selectedDate } : "skip"
@@ -179,23 +146,18 @@ export default function Booking() {
   const handlePhoneChange = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11);
     setPhone(digits);
-    if (digits.length === 11 && !validateIranianPhone(digits)) {
-      setPhoneError("\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0645\u062b\u0627\u0644: ۰۹۱۲۱۲۳۴۵۶۷)");
-    } else {
-      setPhoneError("");
-    }
+    setPhoneError(digits.length === 11 && !validateIranianPhone(digits) ? "\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0645\u062b\u0627\u0644: 09121234567)" : "");
   };
 
   const handleSubmit = async () => {
     if (selectedServiceIds.length === 0 || !selectedDate || !selectedTime || !petName) return;
     if (!phone || !validateIranianPhone(phone)) {
-      setPhoneError("\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0628\u0627\u06cc\u062f ۱۱ \u0631\u0642\u0645 \u0648 \u0628\u0627 ۰۹ \u0634\u0631\u0648\u0639 \u0634\u0648\u062f)");
+      setPhoneError("\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a (\u0628\u0627\u06cc\u062f 11 \u0631\u0642\u0645 \u0648 09 \u0634\u0631\u0648\u0639 \u0634\u0648\u062f)");
       return;
     }
     setIsSubmitting(true);
     setError(null);
     try {
-      const serviceNames = selectedServiceDataList.map((s) => s.name);
       await createAppointment({
         serviceIds: selectedServiceIds,
         date: selectedDate,
@@ -208,21 +170,6 @@ export default function Booking() {
         notes: notes || undefined,
         totalPrice,
       });
-
-      // Send email notification (best-effort)
-      sendEmail({
-        petName,
-        petType,
-        petBreed: petBreed || undefined,
-        petWeight: petWeight ? Number(petWeight) : undefined,
-        phone,
-        notes: notes || undefined,
-        serviceNames,
-        totalPrice,
-        date: selectedDate,
-        time: selectedTime,
-      }).catch(() => {});
-
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "\u062e\u0637\u0627 \u062f\u0631 \u062b\u0628\u062a \u0646\u0648\u0628\u062a");
@@ -250,12 +197,12 @@ export default function Booking() {
           <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-emerald-100 to-emerald-50 clay-blob flex items-center justify-center mb-6">
             <Check className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-2xl font-black mb-3">\u0646\u0648\u0628\u062a \u062b\u0628\u062a \u0634\u062f! \ud83c\udf89</h2>
+          <h2 className="text-2xl font-black mb-3">{"\u0646\u0648\u0628\u062a \u062b\u0628\u062a \u0634\u062f!"} {"\ud83c\udf89"}</h2>
           <p className="text-muted-foreground mb-6">
-            \u0646\u0648\u0628\u062a {petName} \u0639\u0632\u06cc\u0632 \u062b\u0628\u062a \u0634\u062f. \u0628\u0627 \u0634\u0645\u0627\u0631\u0647 {toPersianDigits(phone)} \u062a\u0645\u0627\u0633 \u06af\u0631\u0641\u062a\u0647 \u0645\u06cc\u200c\u0634\u0648\u062f.
+            {"\u0646\u0648\u0628\u062ت"} {petName} {"\u0639\u0632\u06cc\u0632 \u062b\u0628\u062a \u0634\u062f. \u0628\u0627 \u0634\u0645\u0627\u0631\u0647"} {toPersianDigits(phone)} {"\u062a\u0645\u0627\u0633 \u06af\u0631\u0641\u062a\u0647 \u0645\u06cc\u200c\u0634\u0648\u062f."}
           </p>
-          <Link to="/dashboard" className="clay-btn bg-primary text-primary-foreground px-6 py-3 font-bold inline-flex items-center justify-center gap-2 w-full">
-            \u0645\u0634\u0627\u0647\u062f\u0647 \u0646\u0648\u0628\u062a\u200c\u0647\u0627 <ArrowLeft className="w-4 h-4" />
+          <Link to="/" className="clay-btn bg-primary text-primary-foreground px-6 py-3 font-bold inline-flex items-center justify-center gap-2 w-full">
+            {"\u0628\u0627\u0632\u06af\u0634\u062a \u0628\u0647 \u0635\u0641\u062d\u0647 \u0627\u0635\u0644\u06cc"}
           </Link>
         </motion.div>
       </div>
@@ -263,7 +210,11 @@ export default function Booking() {
   }
 
   if (!services) {
-    return <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   const canSubmit = selectedServiceIds.length > 0 && selectedDate && selectedTime && petName && validateIranianPhone(phone) && !isSubmitting;
@@ -274,10 +225,10 @@ export default function Booking() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-4">
-            <ArrowRight className="w-4 h-4" /> \u0628\u0627\u0632\u06af\u0634\u062a
+            <ArrowRight className="w-4 h-4" /> {"\u0628\u0627\u0632\u06af\u0634\u062a"}
           </Link>
           <h1 className="text-3xl md:text-4xl font-black">
-            \u0631\u0632\u0631\u0648 <span className="bg-gradient-to-l from-primary to-amber-500 bg-clip-text text-transparent">\u0646\u0648\u0628\u062a</span>
+            {"\u0631\u0632\u0631\u0648"} <span className="bg-gradient-to-l from-primary to-amber-500 bg-clip-text text-transparent">{"\u0646\u0648\u0628\u062a"}</span>
           </h1>
         </div>
 
@@ -305,20 +256,10 @@ export default function Booking() {
               const dateStr = `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
               const isToday = viewYear === todayJ[0] && viewMonth === todayJ[1] && day === todayJ[2];
               return (
-                <button
-                  key={`d-${i}`}
-                  onClick={() => !past && handleDateClick(day)}
-                  disabled={past}
-                  className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${
-                    past
-                      ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30"
-                      : selectedDate === dateStr
-                        ? "bg-primary text-primary-foreground shadow-md scale-105"
-                        : "hover:bg-secondary/60 hover:scale-105"
-                  }`}
-                >
+                <button key={`d-${i}`} onClick={() => !past && handleDateClick(day)} disabled={past}
+                  className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${past ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30" : selectedDate === dateStr ? "bg-primary text-primary-foreground shadow-md scale-105" : "hover:bg-secondary/60 hover:scale-105"}`}>
                   {toPersianDigits(day)}
-                  {isToday && <span className="text-[8px] text-primary/60 mt-0.5">\u0627\u0645\u0631\u0648\u0632</span>}
+                  {isToday && <span className="text-[8px] text-primary/60 mt-0.5">{"\u0627\u0645\u0631\u0648\u0632"}</span>}
                 </button>
               );
             })}
@@ -331,24 +272,14 @@ export default function Booking() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="clay-card p-6 mb-8 overflow-hidden">
               <div className="flex items-center gap-2 mb-4">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h3 className="font-bold">\u0633\u0627\u0639\u062a\u200c\u0647\u0627\u06cc \u0642\u0627\u0628\u0644 \u0631\u0632\u0631\u0648</h3>
+                <h3 className="font-bold">{"\u0633\u0627\u0639\u062a\u200c\u0647\u0627\u06cc \u0642\u0627\u0628\u0644 \u0631\u0632\u0631\u0648"}</h3>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"].map((time) => {
                   const isBooked = bookedSlots?.some((s) => s.time === time);
                   return (
-                    <button
-                      key={time}
-                      onClick={() => !isBooked && setSelectedTime(time)}
-                      disabled={isBooked}
-                      className={`py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${
-                        isBooked
-                          ? "bg-muted/50 text-muted-foreground/40 cursor-not-allowed line-through"
-                          : selectedTime === time
-                            ? "bg-primary text-primary-foreground shadow-md"
-                            : "clay-card hover:bg-secondary/50"
-                      }`}
-                    >
+                    <button key={time} onClick={() => !isBooked && setSelectedTime(time)} disabled={isBooked}
+                      className={`py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${isBooked ? "bg-muted/50 text-muted-foreground/40 cursor-not-allowed line-through" : selectedTime === time ? "bg-primary text-primary-foreground shadow-md" : "clay-card hover:bg-secondary/50"}`}>
                       {toPersianDigits(time)}
                     </button>
                   );
@@ -362,45 +293,28 @@ export default function Booking() {
         {selectedDate && selectedTime && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="clay-card p-6 mb-8">
             <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <PawPrint className="w-5 h-5 text-primary" /> \u0641\u0631\u0645 \u0631\u0632\u0631\u0648
+              <PawPrint className="w-5 h-5 text-primary" /> {"\u0641\u0631\u0645 \u0631\u0632\u0631\u0648"}
             </h3>
             <div className="space-y-5">
               {/* Multi-Service Selection */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u062e\u062f\u0645\u062a\u200c\u0647\u0627 \u0631\u0627 \u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f * ({toPersianDigits(selectedServiceIds.length)} \u0645\u0648\u0631\u062f)</label>
+                <label className="block text-sm font-bold mb-2">{"\u062e\u062f\u0645\u062a\u200c\u0647\u0627 \u0631\u0627 \u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f *"} ({toPersianDigits(selectedServiceIds.length)} {"\u0645\u0648\u0631\u062f"})</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {services.map((s) => {
                     const disabled = isServiceDisabled(s, selectedServiceIds, services);
                     const selected = selectedServiceIds.includes(s._id);
                     return (
-                      <button
-                        key={s._id}
-                        onClick={() => !disabled && handleServiceToggle(s._id)}
-                        disabled={disabled}
-                        className={`clay-card p-3 text-right transition-all relative ${
-                          disabled && !selected
-                            ? "opacity-40 cursor-not-allowed"
-                            : selected
-                              ? "ring-2 ring-primary bg-primary/5"
-                              : "hover:bg-secondary/50"
-                        }`}
-                      >
+                      <button key={s._id} onClick={() => !disabled && handleServiceToggle(s._id)} disabled={disabled}
+                        className={`clay-card p-3 text-right transition-all relative ${disabled && !selected ? "opacity-40 cursor-not-allowed" : selected ? "ring-2 ring-primary bg-primary/5" : "hover:bg-secondary/50"}`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-bold text-sm">{s.name}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">{toPersianDigits(s.price.toLocaleString())} \u062a\u0648\u0645\u0627\u0646</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{toPersianDigits(s.price.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</div>
                           </div>
                           <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selected ? "bg-primary border-primary" : "border-border"}`}>
                             {selected && <Check className="w-3 h-3 text-white" />}
                           </div>
                         </div>
-                        {disabled && !selected && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[10px] bg-muted/80 px-2 py-0.5 rounded-full text-muted-foreground">
-                              {s.order === 4 ? "\u0642\u06cc\u0686\u06cc/\u0645\u0627\u0634\u06cc\u0646 \u0627\u0646\u062a\u062e\u0627\u0628 \u0634\u062f\u0647" : "\u062a\u0631\u06a9\u06cc\u0628\u06cc \u0627\u0646\u062a\u062e\u0627\u0628 \u0634\u062f\u0647"}
-                            </span>
-                          </div>
-                        )}
                       </button>
                     );
                   })}
@@ -409,7 +323,7 @@ export default function Booking() {
 
               {/* Pet Type */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u0646\u0648\u0639 \u062d\u06cc\u0648\u0627\u0646 *</label>
+                <label className="block text-sm font-bold mb-2">{"\u0646\u0648\u0639 \u062d\u06cc\u0648\u0627\u0646 *"}</label>
                 <div className="flex gap-2">
                   {[["dog", "\ud83d\udc15 \u0633\u06af"], ["cat", "\ud83d\udc08 \u06af\u0631\u0628\u0647"], ["rabbit", "\ud83d\udc07 \u062e\u0631\u06af\u0648\u0634"]].map(([v, l]) => (
                     <button key={v} onClick={() => setPetType(v)} className={`clay-card flex-1 py-3 text-center text-sm font-bold transition-all ${petType === v ? "ring-2 ring-primary" : "hover:bg-secondary/50"}`}>
@@ -421,13 +335,13 @@ export default function Booking() {
 
               {/* Pet Name */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u0646\u0627\u0645 \u062d\u06cc\u0648\u0627\u0646 *</label>
-                <input type="text" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder="\u0645\u062b\u0644\u0627\u064b \u067e\u067e\u06cc" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">{"\u0646\u0627\u0645 \u062d\u06cc\u0648\u0627\u0646 *"}</label>
+                <input type="text" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder={"\u0645\u062b\u0644\u0627\u064b \u067e\u067e\u06cc"} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 *</label>
+                <label className="block text-sm font-bold mb-2">{"\u0634\u0645\u0627\u0631\u0647 \u0645\u0648\u0628\u0627\u06cc\u0644 *"}</label>
                 <div className="relative">
                   <Phone className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                   <input type="tel" value={phone} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="09121234567" dir="ltr" maxLength={11} className={`clay-input w-full pr-9 pl-4 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-primary ${phoneError ? "border-red-400" : ""}`} />
@@ -435,42 +349,42 @@ export default function Booking() {
                 {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                 {!phoneError && phone.length === 11 && validateIranianPhone(phone) && (
                   <p className="text-emerald-600 text-xs mt-1 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> \u0634\u0645\u0627\u0631\u0647 \u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a
+                    <Check className="w-3 h-3" /> {"\u0634\u0645\u0627\u0631\u0647 \u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a"}
                   </p>
                 )}
               </div>
 
               {/* Breed */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u0646\u0632\u0627\u062f (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)</label>
-                <input type="text" value={petBreed} onChange={(e) => setPetBreed(e.target.value)} placeholder="\u0645\u062b\u0644\u0627\u064b Pomeranian" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">{"\u0646\u0632\u0627\u062f (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)"}</label>
+                <input type="text" value={petBreed} onChange={(e) => setPetBreed(e.target.value)} placeholder={"\u0645\u062b\u0644\u0627\u064b Pomeranian"} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Weight */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u0639\u0646\u0648\u0627\u0646 (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)</label>
-                <input type="number" value={petWeight} onChange={(e) => setPetWeight(e.target.value)} placeholder="\u06a9\u06cc\u0644\u0648\u06af\u0631\u0645" min="0" max="100" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-bold mb-2">{"\u0639\u0646\u0648\u0627\u0646 (\u0627\u062e\u062a\u06cc\u0627\u0631\u06cc)"}</label>
+                <input type="number" value={petWeight} onChange={(e) => setPetWeight(e.target.value)} placeholder={"\u06a9\u06cc\u0644\u0648\u06af\u0631\u0645"} min="0" max="100" className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-bold mb-2">\u062a\u0648\u0636\u06cc\u062d\u0627\u062a</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="\u0648\u06cc\u0698\u06af\u06cc\u200c\u0647\u0627\u06cc \u0627\u062e\u0644\u0627\u0642\u06cc \u067e\u062a \u062e\u0648\u062f \u0631\u0627 \u0628\u0646\u0648\u06cc\u0633\u06cc\u062f..." className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                <label className="block text-sm font-bold mb-2">{"\u062a\u0648\u0636\u06cc\u062d\u0627\u062a"}</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={"\u0648\u06cc\u0698\u06af\u06cc\u200c\u0647\u0627\u06cc \u0627\u062e\u0644\u0627\u0642\u06cc \u067e\u062a \u062e\u0648\u062f \u0631\u0627 \u0628\u0646\u0648\u06cc\u0633\u06cc\u062f..."} className="clay-input w-full px-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
               </div>
 
               {/* Selected Services Summary & Total Price */}
               {selectedServiceIds.length > 0 && (
                 <div className="clay-card p-4 bg-gradient-to-l from-primary/5 to-amber-50/50">
-                  <div className="text-sm font-bold mb-2">\u062e\u062f\u0645\u062a\u200c\u0647\u0627\u06cc \u0627\u0646\u062a\u062e\u0627\u0628 \u0634\u062f\u0647:</div>
+                  <div className="text-sm font-bold mb-2">{"\u062e\u062f\u0645\u062a\u200c\u0647\u0627\u06cc \u0627\u0646\u062a\u062e\u0627\u0628 \u0634\u062f\u0647:"}</div>
                   {selectedServiceDataList.map((s) => (
                     <div key={s._id} className="flex items-center justify-between text-sm py-1">
                       <span className="text-muted-foreground">{s.name}</span>
-                      <span className="font-bold">{toPersianDigits(s.price.toLocaleString())} \u062a\u0648\u0645\u0627\u0646</span>
+                      <span className="font-bold">{toPersianDigits(s.price.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</span>
                     </div>
                   ))}
                   <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
-                    <span className="font-bold">\u062c\u0645\u0639 \u0642\u0628\u0644 \u062a\u062e\u0635\u0635</span>
-                    <span className="text-xl font-black text-primary">{toPersianDigits(totalPrice.toLocaleString())} \u062a\u0648\u0645\u0627\u0646</span>
+                    <span className="font-bold">{"\u062c\u0645\u0639 \u0642\u0628\u0644 \u062a\u062e\u0635\u0635"}</span>
+                    <span className="text-xl font-black text-primary">{toPersianDigits(totalPrice.toLocaleString())} {"\u062a\u0648\u0645\u0627\u0646"}</span>
                   </div>
                 </div>
               )}
@@ -488,9 +402,9 @@ export default function Booking() {
             <div className="flex justify-start mt-6">
               <button onClick={handleSubmit} disabled={!canSubmit} className="clay-btn bg-primary text-primary-foreground px-10 py-3 font-bold inline-flex items-center gap-2 disabled:opacity-40">
                 {isSubmitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> \u062f\u0631 \u062d\u0627\u0644 \u062b\u0628\u062a...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {"\u062f\u0631 \u062d\u0627\u0644 \u062b\u0628\u062a..."}</>
                 ) : (
-                  <>\u062b\u0628\u062a \u0646\u0648\u0628\u062t <Check className="w-4 h-4" /></>
+                  <>{"\u062b\u0628\u062a \u0646\u0648\u0628\u062a"} <Check className="w-4 h-4" /></>
                 )}
               </button>
             </div>
