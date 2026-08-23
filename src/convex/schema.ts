@@ -2,7 +2,6 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { Infer, v } from "convex/values";
 
-// default user roles. can add / remove based on the project as needed
 export const ROLES = {
   ADMIN: "admin",
   USER: "user",
@@ -18,36 +17,37 @@ export type Role = Infer<typeof roleValidator>;
 
 const schema = defineSchema(
   {
-    // default auth tables using convex auth.
-    ...authTables, // do not remove or modify
+    ...authTables,
 
-    // the users table is the default users table that is brought in by the authTables
     users: defineTable({
-      name: v.optional(v.string()), // name of the user. do not remove
-      image: v.optional(v.string()), // image of the user. do not remove
-      email: v.optional(v.string()), // email of the user. do not remove
-      emailVerificationTime: v.optional(v.number()), // email verification time. do not remove
-      isAnonymous: v.optional(v.boolean()), // is the user anonymous. do not remove
-
-      role: v.optional(roleValidator), // role of the user. do not remove
+      name: v.optional(v.string()),
+      image: v.optional(v.string()),
+      email: v.optional(v.string()),
+      emailVerificationTime: v.optional(v.number()),
+      isAnonymous: v.optional(v.boolean()),
+      role: v.optional(roleValidator),
       phone: v.optional(v.string()),
     }).index("email", ["email"]),
 
-    // Grooming services offered by Saleh Groomer
+    // Grooming services
     services: defineTable({
       name: v.string(),
       nameEn: v.string(),
       description: v.string(),
       price: v.number(),
-      duration: v.number(), // duration in minutes
-      petType: v.union(
-        v.literal("dog"),
-        v.literal("cat"),
-        v.literal("both"),
-      ),
+      duration: v.number(),
+      petTypes: v.array(v.string()), // ["dog", "cat", "rabbit"]
       icon: v.string(),
       isActive: v.boolean(),
+      order: v.number(),
     }).index("by_active", ["isActive"]),
+
+    // Working hours per weekday (admin-configurable)
+    work_hours: defineTable({
+      weekday: v.number(), // 0=Saturday ... 6=Friday
+      slots: v.array(v.string()), // ["09:00", "09:30", ...]
+      isActive: v.boolean(),
+    }).index("by_weekday", ["weekday"]),
 
     // Appointment bookings
     appointments: defineTable({
@@ -56,13 +56,11 @@ const schema = defineSchema(
       date: v.string(), // YYYY-MM-DD
       time: v.string(), // HH:MM
       petName: v.string(),
-      petType: v.union(
-        v.literal("dog"),
-        v.literal("cat"),
-      ),
+      petType: v.string(), // "dog" | "cat" | "rabbit"
       petBreed: v.optional(v.string()),
       petWeight: v.optional(v.number()),
       notes: v.optional(v.string()),
+      price: v.number(),
       status: v.union(
         v.literal("pending"),
         v.literal("confirmed"),
@@ -75,7 +73,19 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_status", ["status"]),
 
-    // Blog posts for SEO and content
+    // Portfolio / gallery items (admin-managed)
+    portfolio: defineTable({
+      title: v.string(),
+      description: v.optional(v.string()),
+      imageUrl: v.string(),
+      petType: v.optional(v.string()),
+      serviceType: v.optional(v.string()),
+      isPublished: v.boolean(),
+      order: v.number(),
+      createdAt: v.number(),
+    }).index("by_published", ["isPublished"]),
+
+    // Blog posts for SEO
     blog_posts: defineTable({
       title: v.string(),
       slug: v.string(),

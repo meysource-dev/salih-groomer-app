@@ -7,10 +7,11 @@ export const create = mutation({
     date: v.string(),
     time: v.string(),
     petName: v.string(),
-    petType: v.union(v.literal("dog"), v.literal("cat")),
+    petType: v.string(),
     petBreed: v.optional(v.string()),
     petWeight: v.optional(v.number()),
     notes: v.optional(v.string()),
+    price: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = (await ctx.auth.getUserIdentity())?.subject;
@@ -42,6 +43,7 @@ export const create = mutation({
       petBreed: args.petBreed,
       petWeight: args.petWeight,
       notes: args.notes,
+      price: args.price,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -86,7 +88,7 @@ export const cancel = mutation({
 });
 
 export const getBookedSlots = query({
-  args: { date: v.string(), serviceId: v.id("services") },
+  args: { date: v.string() },
   handler: async (ctx, args) => {
     const appointments = await ctx.db
       .query("appointments")
@@ -94,7 +96,7 @@ export const getBookedSlots = query({
       .collect();
 
     return appointments
-      .filter((a) => a.status !== "cancelled" && a.serviceId === args.serviceId)
+      .filter((a) => a.status !== "cancelled")
       .map((a) => ({ date: a.date, time: a.time }));
   },
 });

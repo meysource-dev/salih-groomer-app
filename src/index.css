@@ -42,74 +42,70 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Claymorphism Theme – Saleh Groomer */
-:root {
-  --radius: 1.25rem;
-  --background: oklch(0.96 0.01 90);
-  --foreground: oklch(0.3 0.02 260);
-  --card: oklch(0.97 0.008 85);
-  --card-foreground: oklch(0.3 0.02 260);
-  --popover: oklch(0.98 0.005 85);
-  --popover-foreground: oklch(0.3 0.02 260);
-  --primary: oklch(0.62 0.16 25);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.92 0.04 90);
-  --secondary-foreground: oklch(0.35 0.04 30);
-  --muted: oklch(0.94 0.015 90);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.88 0.08 160);
-  --accent-foreground: oklch(0.28 0.06 160);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(0.9 0.02 90);
-  --input: oklch(0.93 0.015 90);
-  --ring: oklch(0.62 0.16 25);
-  --chart-1: oklch(0.62 0.16 25);
-  --chart-2: oklch(0.7 0.12 160);
-  --chart-3: oklch(0.75 0.1 50);
-  --chart-4: oklch(0.68 0.14 300);
-  --chart-5: oklch(0.72 0.1 200);
-  --sidebar: oklch(0.95 0.01 90);
-  --sidebar-foreground: oklch(0.3 0.02 260);
-  --sidebar-primary: oklch(0.62 0.16 25);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.92 0.04 90);
-  --sidebar-accent-foreground: oklch(0.35 0.04 30);
-  --sidebar-border: oklch(0.9 0.02 90);
-  --sidebar-ring: oklch(0.62 0.16 25);
+/* IranSans Font */
+@font-face {
+  font-family: 'IRANSansX';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans@v33.0.0/IRANSansX-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IRANSansX';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans@v33.0.0/IRANSansX-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IRANSansX';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans@v33.0.0/IRANSansX-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IRANSansX';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/iran-sans@v33.0.0/IRANSansX-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
 }
 
-.dark {
-  --background: oklch(0.2 0.01 260);
-  --foreground: oklch(0.93 0.01 90);
-  --card: oklch(0.24 0.015 260);
-  --card-foreground: oklch(0.93 0.01 90);
-  --popover: oklch(0.24 0.015 260);
-  --popover-foreground: oklch(0.93 0.01 90);
-  --primary: oklch(0.7 0.14 25);
-  --primary-foreground: oklch(0.15 0.01 25);
-  --secondary: oklch(0.28 0.02 260);
-  --secondary-foreground: oklch(0.9 0.01 90);
-  --muted: oklch(0.26 0.015 260);
-  --muted-foreground: oklch(0.6 0.02 260);
-  --accent: oklch(0.35 0.06 160);
-  --accent-foreground: oklch(0.9 0.01 90);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(0.3 0.02 260);
-  --input: oklch(0.28 0.02 260);
-  --ring: oklch(0.7 0.14 25);
-  --chart-1: oklch(0.7 0.14 25);
-  --chart-2: oklch(0.65 0.12 160);
-  --chart-3: oklch(0.7 0.1 50);
-  --chart-4: oklch(0.62 0.14 300);
-  --chart-5: oklch(0.68 0.1 200);
-  --sidebar: oklch(0.22 0.015 260);
-  --sidebar-foreground: oklch(0.93 0.01 90);
-  --sidebar-primary: oklch(0.7 0.14 25);
-  --sidebar-primary-foreground: oklch(0.93 0.01 90);
-  --sidebar-accent: oklch(0.28 0.02 260);
-  --sidebar-accent-foreground: oklch(0.9 0.01 90);
-  --sidebar-border: oklch(0.3 0.02 260);
-  --sidebar-ring: oklch(0.7 0.14 25);
+/* Warm Claymorphism Theme – Saleh Groomer */
+:root {
+  --radius: 1.25rem;
+  --background: oklch(0.97 0.008 70);
+  --foreground: oklch(0.25 0.03 60);
+  --card: oklch(0.98 0.006 65);
+  --card-foreground: oklch(0.25 0.03 60);
+  --popover: oklch(0.98 0.005 65);
+  --popover-foreground: oklch(0.25 0.03 60);
+  --primary: oklch(0.55 0.14 40);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.02 60);
+  --secondary-foreground: oklch(0.35 0.04 50);
+  --muted: oklch(0.95 0.01 60);
+  --muted-foreground: oklch(0.45 0.02 60);
+  --accent: oklch(0.82 0.06 60);
+  --accent-foreground: oklch(0.3 0.04 50);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0.92 0.015 60);
+  --input: oklch(0.94 0.01 60);
+  --ring: oklch(0.55 0.14 40);
+  --chart-1: oklch(0.55 0.14 40);
+  --chart-2: oklch(0.65 0.1 75);
+  --chart-3: oklch(0.6 0.12 55);
+  --chart-4: oklch(0.58 0.11 35);
+  --chart-5: oklch(0.62 0.09 80);
+  --sidebar: oklch(0.96 0.008 65);
+  --sidebar-foreground: oklch(0.25 0.03 60);
+  --sidebar-primary: oklch(0.55 0.14 40);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.02 60);
+  --sidebar-accent-foreground: oklch(0.35 0.04 50);
+  --sidebar-border: oklch(0.92 0.015 60);
+  --sidebar-ring: oklch(0.55 0.14 40);
 }
 
 @layer base {
@@ -118,6 +114,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
@@ -132,8 +129,8 @@
     border: 1px solid var(--border);
     border-radius: 1.5rem;
     box-shadow:
-      0 4px 14px 0 oklch(0.7 0.04 90 / 0.25),
-      0 1px 3px 0 oklch(0.7 0.04 90 / 0.1),
+      0 4px 14px 0 oklch(0.7 0.06 60 / 0.2),
+      0 1px 3px 0 oklch(0.7 0.04 60 / 0.08),
       inset 0 1px 0 0 oklch(1 0 0 / 0.6);
   }
   .clay-card-hover {
@@ -141,50 +138,50 @@
     border: 1px solid var(--border);
     border-radius: 1.5rem;
     box-shadow:
-      0 4px 14px 0 oklch(0.7 0.04 90 / 0.25),
-      0 1px 3px 0 oklch(0.7 0.04 90 / 0.1),
+      0 4px 14px 0 oklch(0.7 0.06 60 / 0.2),
+      0 1px 3px 0 oklch(0.7 0.04 60 / 0.08),
       inset 0 1px 0 0 oklch(1 0 0 / 0.6);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .clay-card-hover:hover {
     transform: translateY(-4px) scale(1.01);
     box-shadow:
-      0 12px 28px 0 oklch(0.7 0.04 90 / 0.3),
-      0 4px 10px 0 oklch(0.7 0.04 90 / 0.15),
+      0 12px 28px 0 oklch(0.7 0.06 60 / 0.25),
+      0 4px 10px 0 oklch(0.7 0.04 60 / 0.12),
       inset 0 1px 0 0 oklch(1 0 0 / 0.7);
   }
   .clay-btn {
     border-radius: 1rem;
     box-shadow:
-      0 3px 10px 0 oklch(0.62 0.16 25 / 0.3),
-      0 1px 3px 0 oklch(0.62 0.16 25 / 0.15),
-      inset 0 1px 0 0 oklch(1 0 0 / 0.4);
+      0 3px 10px 0 oklch(0.55 0.14 40 / 0.3),
+      0 1px 3px 0 oklch(0.55 0.14 40 / 0.12),
+      inset 0 1px 0 0 oklch(1 0 0 / 0.3);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .clay-btn:hover {
     transform: translateY(-1px);
     box-shadow:
-      0 6px 16px 0 oklch(0.62 0.16 25 / 0.35),
-      0 2px 5px 0 oklch(0.62 0.16 25 / 0.2),
-      inset 0 1px 0 0 oklch(1 0 0 / 0.5);
+      0 6px 16px 0 oklch(0.55 0.14 40 / 0.35),
+      0 2px 5px 0 oklch(0.55 0.14 40 / 0.15),
+      inset 0 1px 0 0 oklch(1 0 0 / 0.4);
   }
   .clay-btn:active {
     transform: translateY(0);
     box-shadow:
-      0 1px 4px 0 oklch(0.62 0.16 25 / 0.25),
-      inset 0 2px 4px 0 oklch(0.62 0.16 25 / 0.1);
+      0 1px 4px 0 oklch(0.55 0.14 40 / 0.2),
+      inset 0 2px 4px 0 oklch(0.55 0.14 40 / 0.08);
   }
   .clay-input {
     border-radius: 1rem;
     box-shadow:
-      inset 0 2px 4px 0 oklch(0.7 0.03 90 / 0.2),
+      inset 0 2px 4px 0 oklch(0.7 0.03 60 / 0.15),
       0 1px 0 0 oklch(1 0 0 / 0.5);
     background: var(--card);
   }
   .clay-blob {
     border-radius: 50%;
     box-shadow:
-      0 8px 24px 0 oklch(0.7 0.04 90 / 0.3),
+      0 8px 24px 0 oklch(0.7 0.06 60 / 0.25),
       inset 0 2px 0 0 oklch(1 0 0 / 0.5);
   }
 }
