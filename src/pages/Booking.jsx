@@ -80,15 +80,10 @@ function isServiceDisabled(service, selectedIds, allServices) {
 }
 
 export default function Booking() {
-  const services = useQuery(api.services.list);
-  const createAppointment = useMutation(api.appointments.create);
-  const bookedSlots = useQuery(
-    api.appointments.getBookedSlots,
-    selectedDate ? { date: selectedDate } : "skip"
-  );
-
   const now = new Date();
   const todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+
+  // All useState hooks first
   const [viewYear, setViewYear] = useState(todayJ[0]);
   const [viewMonth, setViewMonth] = useState(todayJ[1]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -104,6 +99,14 @@ export default function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // Then Convex hooks
+  const services = useQuery(api.services.list);
+  const createAppointment = useMutation(api.appointments.create);
+  const bookedSlots = useQuery(
+    api.appointments.getBookedSlots,
+    selectedDate ? { date: selectedDate } : "skip"
+  );
 
   const daysInMonth = useMemo(() => jalaliDaysInMonth(viewYear, viewMonth), [viewYear, viewMonth]);
   const startDay = useMemo(() => getFirstDayOfWeekJalali(viewYear, viewMonth), [viewYear, viewMonth]);
