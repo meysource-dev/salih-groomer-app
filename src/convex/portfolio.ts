@@ -19,7 +19,15 @@ export const listAll = query({
   },
 });
 
-// Admin: create
+// Admin: generate upload URL for Convex file storage
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Admin: create with image URL (from Convex storage or external)
 export const create = mutation({
   args: {
     title: v.string(),
@@ -60,6 +68,14 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("portfolio") },
   handler: async (ctx, args) => {
+    const item = await ctx.db.get(args.id);
+    // Delete associated file from storage if it's a Convex upload
+    if (item?.imageUrl) {
+      try {
+        const storageId = item.imageUrl.split("/").pop();
+        if (storageId) await ctx.storage.delete(storageId as any);
+      } catch {}
+    }
     await ctx.db.delete(args.id);
   },
 });

@@ -15,8 +15,9 @@ export const create = mutation({
     totalPrice: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = (await ctx.auth.getUserIdentity())?.subject;
-    if (!userId) throw new Error("Not authenticated");
+    // Allow both authenticated and unauthenticated users
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject || `guest_${args.phone}`;
 
     // Check for conflicting appointments on same date+time
     const existing = await ctx.db
@@ -25,11 +26,10 @@ export const create = mutation({
       .collect();
 
     const conflict = existing.find(
-      (a) =>
-        a.time === args.time && a.status !== "cancelled",
+      (a) => a.time === args.time && a.status !== "cancelled",
     );
     if (conflict) {
-      throw new Error("این زمان قبلاً رزرو شده است");
+      throw new Error("\u0627\u06cc\u0646 \u0632\u0645\u0627\u0646 \u0642\u0628\u0644\u0627\u064b \u0631\u0632\u0631\u0648 \u0634\u062f\u0647 \u0627\u0633\u062a");
     }
 
     const appointmentId = await ctx.db.insert("appointments", {
@@ -55,9 +55,10 @@ export const create = mutation({
 export const listByUser = query({
   args: {},
   handler: async (ctx) => {
-    const userId = (await ctx.auth.getUserIdentity())?.subject;
-    if (!userId) return [];
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
 
+    const userId = identity.subject;
     const appointments = await ctx.db
       .query("appointments")
       .withIndex("by_user", (q) => q.eq("userId", userId as any))
@@ -67,15 +68,12 @@ export const listByUser = query({
     const results = [];
     for (const apt of appointments) {
       const services = [];
-      const sids = (apt as any).serviceIds || (apt as any).serviceId ? [(apt as any).serviceId] : [];
-      if (Array.isArray((apt as any).serviceIds)) {
-        for (const sid of (apt as any).serviceIds) {
+      const sids = (apt as any).serviceIds || ((apt as any).serviceId ? [(apt as any).serviceId] : []);
+      if (Array.isArray(sids)) {
+        for (const sid of sids) {
           const svc = await ctx.db.get(sid);
           if (svc) services.push(svc);
         }
-      } else if ((apt as any).serviceId) {
-        const svc = await ctx.db.get((apt as any).serviceId);
-        if (svc) services.push(svc);
       }
       results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
     }
@@ -94,14 +92,12 @@ export const listAll = query({
     const results = [];
     for (const apt of appointments) {
       const services = [];
-      if (Array.isArray((apt as any).serviceIds)) {
-        for (const sid of (apt as any).serviceIds) {
+      const sids = (apt as any).serviceIds || ((apt as any).serviceId ? [(apt as any).serviceId] : []);
+      if (Array.isArray(sids)) {
+        for (const sid of sids) {
           const svc = await ctx.db.get(sid);
           if (svc) services.push(svc);
         }
-      } else if ((apt as any).serviceId) {
-        const svc = await ctx.db.get((apt as any).serviceId);
-        if (svc) services.push(svc);
       }
       results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
     }
@@ -112,11 +108,8 @@ export const listAll = query({
 export const cancel = mutation({
   args: { id: v.id("appointments") },
   handler: async (ctx, args) => {
-    const userId = (await ctx.auth.getUserIdentity())?.subject;
-    if (!userId) throw new Error("Not authenticated");
     const appointment = await ctx.db.get(args.id);
     if (!appointment) throw new Error("Appointment not found");
-    if (appointment.userId !== userId) throw new Error("Not authorized");
     await ctx.db.patch(args.id, { status: "cancelled" });
   },
 });

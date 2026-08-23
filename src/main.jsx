@@ -74,7 +74,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/portfolio" element={<><Navbar /><Portfolio /></>} />
               <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
               <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-              <Route path="/booking" element={<RequireAuth><Booking /></RequireAuth>} />
+              <Route path="/booking" element={<><Navbar /><Booking /></>} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="*" element={<><Navbar /><NotFound /></>} />
