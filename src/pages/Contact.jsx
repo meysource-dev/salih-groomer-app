@@ -34,7 +34,7 @@ export default function Contact() {
               <div className="order-1 md:order-2 flex justify-center">
                 <div className="w-64 h-80 md:w-72 md:h-88 rounded-3xl overflow-hidden clay-card p-2">
                   <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-gradient-to-br from-primary/10 to-amber-100/50 relative">
-                    <img src="/saleh.jpg" alt="صالح گرومر" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }} />
+                    <img src="/hero.jpg" alt="صالح گرومر - گرومر حرفه‌ای" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }} />
                     <div className="absolute inset-0 hidden"><img src="/hero-illustration.svg" alt="صالح گرومر" className="w-full h-full object-contain" /></div>
                   </div>
                 </div>

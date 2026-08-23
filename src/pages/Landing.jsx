@@ -58,7 +58,7 @@ export default function Landing() {
             <div className="relative">
               <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] overflow-hidden clay-card p-2">
                 <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
-                  <img src="/saleh.jpg" alt="صالح گرومر" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }} />
+                  <img src="/hero.jpg" alt="گرومینگ حیوانات خانگی - صالح گرومر" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }} />
                   <div className="absolute inset-0 hidden"><img src="/hero-illustration.svg" alt="صالح گرومر" className="w-full h-full object-contain" /></div>
                 </div>
               </div>
