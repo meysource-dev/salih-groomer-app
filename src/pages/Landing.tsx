@@ -54,8 +54,8 @@ export default function Landing() {
               <span className="text-sm font-medium text-muted-foreground">مرکز تخصصی گرومینگ حیوانات</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
-              <span className="block">صالح</span>
-              <span className="block bg-gradient-to-l from-primary via-amber-500 to-orange-400 bg-clip-text text-transparent">گرومر</span>
+              <span>صالح </span>
+              <span className= "bg-gradient-to-l from-primary via-amber-500 to-orange-400 bg-clip-text text-transparent">گرومر</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed max-w-lg mx-auto md:mx-0">
               اصلاح، شستشو و مراقبت تخصصی سگ، گربه و خرگوهای شما با بهترین کیفیت و محیطی آرام و حرفه‌ای
@@ -73,7 +73,7 @@ export default function Landing() {
             <div className="relative">
               <div className="w-72 h-72 md:w-96 md:h-96 rounded-[2rem] overflow-hidden clay-card p-2">
                 <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
-                  <img src="/saleh.jpg" alt="صالح گرومر" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+                  <img src="public/hero-illustration.svg" alt="صالح گرومر" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
                   <div className="absolute inset-0 hidden">
                     <img src="/hero-illustration.svg" alt="صالح گرومر - گرومینگ حیوانات" className="w-full h-full object-contain" />
                   </div>
