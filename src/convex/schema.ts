@@ -40,8 +40,14 @@ const schema = defineSchema(
       isActive: v.boolean(),
     }).index("by_weekday", ["weekday"]),
 
+    working_days: defineTable({
+      dayOfWeek: v.number(), // 0=Saturday ... 6=Friday (Jalali week)
+      isActive: v.boolean(),
+    }).index("by_dayOfWeek", ["dayOfWeek"]),
+
     appointments: defineTable({
-      userId: v.id("users"),
+      userId: v.string(),
+      ownerName: v.string(),
       serviceIds: v.array(v.id("services")),
       date: v.string(),
       time: v.string(),
@@ -62,7 +68,8 @@ const schema = defineSchema(
     })
       .index("by_user", ["userId"])
       .index("by_date", ["date"])
-      .index("by_status", ["status"]),
+      .index("by_status", ["status"])
+      .index("by_petType", ["petType"]),
 
     portfolio: defineTable({
       title: v.string(),

@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone } from "lucide-react";
+import { Calendar, Check, ArrowRight, ArrowLeft, Loader2, AlertCircle, PawPrint, ChevronRight, ChevronLeft, Phone, User } from "lucide-react";
 import { Link } from "react-router";
 import * as jalaali from "jalaali-js";
 
@@ -44,6 +44,8 @@ function isServiceDisabled(service, selectedIds, allServices) {
   return false;
 }
 
+const PET_TYPE_LABELS = { dog: "🐕 سگ", cat: "🐈 گربه", rabbit: "🐇 خرگوش" };
+
 export default function Booking() {
   const now = new Date();
   const todayJalali = jalaali.toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -56,6 +58,7 @@ export default function Booking() {
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [petType, setPetType] = useState("dog");
   const [petName, setPetName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
   const [petBreed, setPetBreed] = useState("");
   const [petWeight, setPetWeight] = useState("");
   const [phone, setPhone] = useState("");
@@ -72,6 +75,7 @@ export default function Booking() {
     api.appointments.getBookedSlots,
     selectedDate ? { date: selectedDate } : "skip"
   );
+  const workingDays = useQuery(api.workingDays.listActive);
 
   const daysInMonth = useMemo(() => jalaliDaysInMonth(viewYear, viewMonth), [viewYear, viewMonth]);
   const startDay = useMemo(() => getFirstDayOfWeekJalali(viewYear, viewMonth), [viewYear, viewMonth]);
@@ -98,8 +102,17 @@ export default function Booking() {
     (viewYear === todayJalali.jy && viewMonth < todayJalali.jm) ||
     (viewYear === todayJalali.jy && viewMonth === todayJalali.jm && day <= todayJalali.jd);
 
+  // Check if a day is an active working day (dayOfWeek: 0=Sat, 6=Fri)
+  const isWorkingDay = (day) => {
+    if (!workingDays) return true; // default: all active
+    const g = jalaali.toGregorian(viewYear, viewMonth, day);
+    const dow = new Date(g.gy, g.gm - 1, g.gd).getDay();
+    const jalaliDow = (dow + 1) % 7;
+    return workingDays.includes(jalaliDow);
+  };
+
   const handleDateClick = (day) => {
-    if (isPast(day)) return;
+    if (isPast(day) || !isWorkingDay(day)) return;
     setSelectedDate(toJalaliDateStr(viewYear, viewMonth, day));
     setSelectedTime(null);
   };
@@ -117,7 +130,7 @@ export default function Booking() {
   };
 
   const handleSubmit = async () => {
-    if (selectedServiceIds.length === 0 || !selectedDate || !selectedTime || !petName) return;
+    if (selectedServiceIds.length === 0 || !selectedDate || !selectedTime || !petName || !ownerName) return;
     if (!phone || !validateIranianPhone(phone)) {
       setPhoneError("شماره موبایل نامعتبر است (باید 11 رقم و با 09 شروع شود)");
       return;
@@ -126,6 +139,7 @@ export default function Booking() {
     setError(null);
     try {
       await createAppointment({
+        ownerName,
         serviceIds: selectedServiceIds,
         date: selectedDate,
         time: selectedTime,
@@ -166,7 +180,7 @@ export default function Booking() {
           </div>
           <h2 className="text-2xl font-black mb-3">نوبت ثبت شد! 🎉</h2>
           <p className="text-muted-foreground mb-6">
-            نوبت {petName} عزیز ثبت شد. با شماره {toPersianDigits(phone)} تماس گرفته می‌شود.
+            نوبت {petName} عزیز ({ownerName}) ثبت شد. با شماره {toPersianDigits(phone)} تماس گرفته می‌شود.
           </p>
           <Link to="/" className="clay-btn bg-primary text-primary-foreground px-6 py-3 font-bold inline-flex items-center justify-center gap-2 w-full">
             بازگشت به صفحه اصلی
@@ -184,7 +198,7 @@ export default function Booking() {
     );
   }
 
-  const canSubmit = selectedServiceIds.length > 0 && selectedDate && selectedTime && petName && validateIranianPhone(phone) && !isSubmitting;
+  const canSubmit = selectedServiceIds.length > 0 && selectedDate && selectedTime && petName && ownerName && validateIranianPhone(phone) && !isSubmitting;
 
   return (
     <div className="min-h-screen bg-background px-4 py-10" dir="rtl">
@@ -219,17 +233,23 @@ export default function Booking() {
             {calendarDays.map((day, i) => {
               if (day === null) return <div key={`e-${i}`} className="aspect-square" />;
               const past = isPast(day);
+              const working = isWorkingDay(day);
               const dateStr = toJalaliDateStr(viewYear, viewMonth, day);
               const isToday = viewYear === todayJalali.jy && viewMonth === todayJalali.jm && day === todayJalali.jd;
+              const disabled = past || !working;
               return (
-                <button key={`d-${i}`} onClick={() => !past && handleDateClick(day)} disabled={past}
-                  className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${past ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30" : selectedDate === dateStr ? "bg-primary text-primary-foreground shadow-md scale-105" : "hover:bg-secondary/60 hover:scale-105"}`}>
+                <button key={`d-${i}`} onClick={() => !disabled && handleDateClick(day)} disabled={disabled}
+                  className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-bold transition-all ${disabled ? "text-muted-foreground/30 cursor-not-allowed bg-muted/30" : selectedDate === dateStr ? "bg-primary text-primary-foreground shadow-md scale-105" : "hover:bg-secondary/60 hover:scale-105"}`}>
                   {toPersianDigits(day)}
                   {isToday && <span className="text-[8px] text-primary/60 mt-0.5">امروز</span>}
+                  {!past && !working && <span className="text-[8px] text-red-400 mt-0.5">تعطیل</span>}
                 </button>
               );
             })}
           </div>
+          {workingDays && (
+            <p className="text-xs text-muted-foreground mt-3 text-center">روزهای تعطیل با رنگ کم‌رنگ و برچسب «تعطیل» نمایش داده می‌شوند</p>
+          )}
         </motion.div>
 
         {/* Time Slots */}
@@ -262,6 +282,15 @@ export default function Booking() {
               <PawPrint className="w-5 h-5 text-primary" /> فرم رزرو
             </h3>
             <div className="space-y-5">
+              {/* Owner Name */}
+              <div>
+                <label className="block text-sm font-bold mb-2">نام صاحب پت *</label>
+                <div className="relative">
+                  <User className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <input type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} placeholder="مثلاً علی محمدی" className="clay-input w-full pr-9 pl-4 py-3 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+
               {/* Multi-Service Selection */}
               <div>
                 <label className="block text-sm font-bold mb-2">خدمات را انتخاب کنید * ({toPersianDigits(selectedServiceIds.length)} مورد)</label>
@@ -341,7 +370,12 @@ export default function Booking() {
               {/* Selected Services Summary & Total Price */}
               {selectedServiceIds.length > 0 && (
                 <div className="clay-card p-4 bg-gradient-to-l from-primary/5 to-amber-50/50">
-                  <div className="text-sm font-bold mb-2">خدمات انتخاب شده:</div>
+                  <div className="text-sm font-bold mb-2">🧾 فاکتور اولیه:</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                    <span>{PET_TYPE_LABELS[petType]}</span>
+                    {petName && <span>• {petName}</span>}
+                    {ownerName && <span>• صاحب: {ownerName}</span>}
+                  </div>
                   {selectedServiceDataList.map((s) => (
                     <div key={s._id} className="flex items-center justify-between text-sm py-1">
                       <span className="text-muted-foreground">{s.name}</span>
@@ -349,7 +383,7 @@ export default function Booking() {
                     </div>
                   ))}
                   <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
-                    <span className="font-bold">جمع قابل تخصیص</span>
+                    <span className="font-bold">جمع قابل پرداخت</span>
                     <span className="text-xl font-black text-primary">{toPersianDigits(totalPrice.toLocaleString())} تومان</span>
                   </div>
                 </div>

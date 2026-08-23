@@ -59,8 +59,11 @@ export default function Landing() {
             <div className="relative">
               <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] overflow-hidden clay-card p-2">
                 <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
-                  <img src="/hero.jpg" alt="گرومینگ حیوانات خانگی - صالح گرومر" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }} />
-                  <div className="absolute inset-0 hidden"><img src="/hero-illustration.svg" alt="صالح گرومر" className="w-full h-full object-contain" /></div>
+                  <img src="/hero.jpg" alt="گرومینگ حیوانات خانگی - صالح گرومر" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; const fb = e.target.parentElement.querySelector('.hero-fallback'); if (fb) fb.classList.remove('hidden'); }} />
+                  <div className="hero-fallback absolute inset-0 hidden bg-gradient-to-br from-primary/10 to-amber-100/50 flex flex-col items-center justify-center gap-3">
+                    <div className="text-5xl">🐕🐈</div>
+                    <span className="text-sm font-bold text-primary">صالح گرومر</span>
+                  </div>
                 </div>
               </div>
               <motion.div animate={{ y: [-5, 5, -5] }} transition={{ duration: 3, repeat: Infinity }} className="absolute -bottom-3 -left-3 w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-50 clay-blob flex items-center justify-center"><PawPrint className="w-7 h-7 text-primary" /></motion.div>

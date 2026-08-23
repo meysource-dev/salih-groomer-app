@@ -4,10 +4,25 @@ import { v } from "convex/values";
 export const listPublished = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db
+    const items = await ctx.db
       .query("portfolio")
       .withIndex("by_published", (q) => q.eq("isPublished", true))
       .collect();
+
+    // Resolve storage IDs to URLs
+    const results = [];
+    for (const item of items) {
+      let url = item.imageUrl;
+      // If it looks like a Convex storage ID (not a URL), resolve it
+      if (item.imageUrl && !item.imageUrl.startsWith("http")) {
+        try {
+          const storageUrl = await ctx.storage.getUrl(item.imageUrl);
+          if (storageUrl) url = storageUrl;
+        } catch {}
+      }
+      results.push({ ...item, imageUrl: url });
+    }
+    return results;
   },
 });
 
@@ -15,7 +30,21 @@ export const listPublished = query({
 export const listAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("portfolio").collect();
+    const items = await ctx.db.query("portfolio").collect();
+
+    // Resolve storage IDs to URLs
+    const results = [];
+    for (const item of items) {
+      let url = item.imageUrl;
+      if (item.imageUrl && !item.imageUrl.startsWith("http")) {
+        try {
+          const storageUrl = await ctx.storage.getUrl(item.imageUrl);
+          if (storageUrl) url = storageUrl;
+        } catch {}
+      }
+      results.push({ ...item, imageUrl: url });
+    }
+    return results;
   },
 });
 
@@ -69,11 +98,9 @@ export const remove = mutation({
   args: { id: v.id("portfolio") },
   handler: async (ctx, args) => {
     const item = await ctx.db.get(args.id);
-    // Delete associated file from storage if it's a Convex upload
-    if (item?.imageUrl) {
+    if (item?.imageUrl && !item.imageUrl.startsWith("http")) {
       try {
-        const storageId = item.imageUrl.split("/").pop();
-        if (storageId) await ctx.storage.delete(storageId as any);
+        await ctx.storage.delete(item.imageUrl as any);
       } catch {}
     }
     await ctx.db.delete(args.id);

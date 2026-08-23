@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 export const create = mutation({
   args: {
+    ownerName: v.string(),
     serviceIds: v.array(v.id("services")),
     date: v.string(),
     time: v.string(),
@@ -15,7 +16,6 @@ export const create = mutation({
     totalPrice: v.number(),
   },
   handler: async (ctx, args) => {
-    // Allow both authenticated and unauthenticated users
     const identity = await ctx.auth.getUserIdentity();
     const userId = identity?.subject || `guest_${args.phone}`;
 
@@ -29,11 +29,12 @@ export const create = mutation({
       (a) => a.time === args.time && a.status !== "cancelled",
     );
     if (conflict) {
-      throw new Error("\u0627\u06cc\u0646 \u0632\u0645\u0627\u0646 \u0642\u0628\u0644\u0627\u064b \u0631\u0632\u0631\u0648 \u0634\u062f\u0647 \u0627\u0633\u062a");
+      throw new Error("این زمان قبلاً رزرو شده است");
     }
 
     const appointmentId = await ctx.db.insert("appointments", {
-      userId: userId as any,
+      userId,
+      ownerName: args.ownerName,
       serviceIds: args.serviceIds,
       date: args.date,
       time: args.time,
@@ -61,45 +62,63 @@ export const listByUser = query({
     const userId = identity.subject;
     const appointments = await ctx.db
       .query("appointments")
-      .withIndex("by_user", (q) => q.eq("userId", userId as any))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .collect();
 
     const results = [];
     for (const apt of appointments) {
       const services = [];
-      const sids = (apt as any).serviceIds || ((apt as any).serviceId ? [(apt as any).serviceId] : []);
-      if (Array.isArray(sids)) {
-        for (const sid of sids) {
+      if (Array.isArray(apt.serviceIds)) {
+        for (const sid of apt.serviceIds) {
           const svc = await ctx.db.get(sid);
           if (svc) services.push(svc);
         }
       }
-      results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
+      results.push({ ...apt, services });
     }
     return results;
   },
 });
 
-// Admin: list all appointments
+// Admin: list all appointments with optional filters
 export const listAll = query({
-  args: {},
-  handler: async (ctx) => {
-    const appointments = await ctx.db
-      .query("appointments")
-      .order("desc")
-      .collect();
+  args: {
+    petType: v.optional(v.string()),
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let appointments;
+
+    if (args.status) {
+      appointments = await ctx.db
+        .query("appointments")
+        .withIndex("by_status", (q) => q.eq("status", args.status as any))
+        .order("desc")
+        .collect();
+    } else {
+      appointments = await ctx.db
+        .query("appointments")
+        .order("desc")
+        .collect();
+    }
+
+    // Filter by petType if specified
+    let filtered = appointments;
+    if (args.petType) {
+      filtered = appointments.filter((a) => a.petType === args.petType);
+    }
+
     const results = [];
-    for (const apt of appointments) {
+    for (const apt of filtered) {
       const services = [];
-      const sids = (apt as any).serviceIds || ((apt as any).serviceId ? [(apt as any).serviceId] : []);
-      if (Array.isArray(sids)) {
-        for (const sid of sids) {
+      if (Array.isArray(apt.serviceIds)) {
+        for (const sid of apt.serviceIds) {
           const svc = await ctx.db.get(sid);
           if (svc) services.push(svc);
         }
       }
-      results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
+      results.push({ ...apt, services });
     }
     return results;
   },
