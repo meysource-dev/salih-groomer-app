@@ -10,6 +10,7 @@ export const create = mutation({
     petType: v.string(),
     petBreed: v.optional(v.string()),
     petWeight: v.optional(v.number()),
+    phone: v.string(),
     notes: v.optional(v.string()),
     price: v.number(),
   },
@@ -42,6 +43,7 @@ export const create = mutation({
       petType: args.petType,
       petBreed: args.petBreed,
       petWeight: args.petWeight,
+      phone: args.phone,
       notes: args.notes,
       price: args.price,
       status: "pending",
@@ -73,17 +75,48 @@ export const listByUser = query({
   },
 });
 
+// Admin: list all appointments
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const appointments = await ctx.db
+      .query("appointments")
+      .order("desc")
+      .collect();
+    const results = [];
+    for (const apt of appointments) {
+      const service = await ctx.db.get(apt.serviceId);
+      results.push({ ...apt, service });
+    }
+    return results;
+  },
+});
+
 export const cancel = mutation({
   args: { id: v.id("appointments") },
   handler: async (ctx, args) => {
     const userId = (await ctx.auth.getUserIdentity())?.subject;
     if (!userId) throw new Error("Not authenticated");
-
     const appointment = await ctx.db.get(args.id);
     if (!appointment) throw new Error("Appointment not found");
     if (appointment.userId !== userId) throw new Error("Not authorized");
-
     await ctx.db.patch(args.id, { status: "cancelled" });
+  },
+});
+
+// Admin: update status
+export const updateStatus = mutation({
+  args: {
+    id: v.id("appointments"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("cancelled"),
+      v.literal("completed"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { status: args.status });
   },
 });
 
@@ -94,7 +127,6 @@ export const getBookedSlots = query({
       .query("appointments")
       .withIndex("by_date", (q) => q.eq("date", args.date))
       .collect();
-
     return appointments
       .filter((a) => a.status !== "cancelled")
       .map((a) => ({ date: a.date, time: a.time }));

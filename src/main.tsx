@@ -8,6 +8,7 @@ import React, { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
+import Navbar from "@/components/Navbar";
 
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
@@ -16,7 +17,8 @@ const Booking = lazy(() => import("./pages/Booking.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Portfolio = lazy(() => import("./pages/Portfolio.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-import Navbar from "@/components/Navbar";
+const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 
 function RouteLoading() {
   return <div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
@@ -68,12 +70,18 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
+              {/* Public routes with navbar */}
               <Route path="/" element={<><Navbar /><Landing /></>} />
+              <Route path="/contact" element={<><Navbar /><Contact /></>} />
+              <Route path="/portfolio" element={<><Navbar /><Portfolio /></>} />
               <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
               <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
               <Route path="/booking" element={<RequireAuth><Booking /></RequireAuth>} />
-              <Route path="/contact" element={<><Navbar /><Contact /></>} />
-              <Route path="/portfolio" element={<><Navbar /><Portfolio /></>} />
+
+              {/* Admin routes - completely separate */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
               <Route path="*" element={<><Navbar /><NotFound /></>} />
             </Routes>
           </Suspense>

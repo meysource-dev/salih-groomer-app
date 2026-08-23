@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { PawPrint, Menu, X, Home, Scissors, Image, Phone, CalendarCheck } from "lucide-react";
+import { PawPrint, Menu, X, Home, Image, Phone, CalendarCheck, Shield } from "lucide-react";
 
 const navLinks = [
   { to: "/", label: "خانه", icon: Home },
@@ -80,6 +80,13 @@ export default function Navbar() {
               >
                 <CalendarCheck className="w-4 h-4" />
                 <span className="hidden sm:inline">رزرو نوبت</span>
+              </Link>
+              <Link
+                to="/admin/login"
+                className="w-9 h-9 rounded-xl clay-card flex items-center justify-center hover:bg-secondary/50 transition-colors"
+                title="پنل مدیریت"
+              >
+                <Shield className="w-4 h-4 text-muted-foreground" />
               </Link>
 
               <button

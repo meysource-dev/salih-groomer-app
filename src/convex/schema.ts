@@ -1,19 +1,6 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
-import { Infer, v } from "convex/values";
-
-export const ROLES = {
-  ADMIN: "admin",
-  USER: "user",
-  MEMBER: "member",
-} as const;
-
-export const roleValidator = v.union(
-  v.literal(ROLES.ADMIN),
-  v.literal(ROLES.USER),
-  v.literal(ROLES.MEMBER),
-);
-export type Role = Infer<typeof roleValidator>;
+import { v } from "convex/values";
 
 const schema = defineSchema(
   {
@@ -25,9 +12,16 @@ const schema = defineSchema(
       email: v.optional(v.string()),
       emailVerificationTime: v.optional(v.number()),
       isAnonymous: v.optional(v.boolean()),
-      role: v.optional(roleValidator),
       phone: v.optional(v.string()),
     }).index("email", ["email"]),
+
+    // Admin users with username/password
+    admin_users: defineTable({
+      username: v.string(),
+      passwordHash: v.string(), // SHA-256 hash
+      name: v.optional(v.string()),
+      isActive: v.boolean(),
+    }).index("by_username", ["username"]),
 
     // Grooming services
     services: defineTable({
@@ -36,16 +30,16 @@ const schema = defineSchema(
       description: v.string(),
       price: v.number(),
       duration: v.number(),
-      petTypes: v.array(v.string()), // ["dog", "cat", "rabbit"]
+      petTypes: v.array(v.string()),
       icon: v.string(),
       isActive: v.boolean(),
       order: v.number(),
     }).index("by_active", ["isActive"]),
 
-    // Working hours per weekday (admin-configurable)
+    // Working hours per weekday
     work_hours: defineTable({
-      weekday: v.number(), // 0=Saturday ... 6=Friday
-      slots: v.array(v.string()), // ["09:00", "09:30", ...]
+      weekday: v.number(),
+      slots: v.array(v.string()),
       isActive: v.boolean(),
     }).index("by_weekday", ["weekday"]),
 
@@ -53,12 +47,13 @@ const schema = defineSchema(
     appointments: defineTable({
       userId: v.id("users"),
       serviceId: v.id("services"),
-      date: v.string(), // YYYY-MM-DD
-      time: v.string(), // HH:MM
+      date: v.string(),
+      time: v.string(),
       petName: v.string(),
-      petType: v.string(), // "dog" | "cat" | "rabbit"
+      petType: v.string(),
       petBreed: v.optional(v.string()),
       petWeight: v.optional(v.number()),
+      phone: v.string(),
       notes: v.optional(v.string()),
       price: v.number(),
       status: v.union(
@@ -73,7 +68,7 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_status", ["status"]),
 
-    // Portfolio / gallery items (admin-managed)
+    // Portfolio / gallery
     portfolio: defineTable({
       title: v.string(),
       description: v.optional(v.string()),
@@ -85,7 +80,7 @@ const schema = defineSchema(
       createdAt: v.number(),
     }).index("by_published", ["isPublished"]),
 
-    // Blog posts for SEO
+    // Blog posts
     blog_posts: defineTable({
       title: v.string(),
       slug: v.string(),
@@ -100,9 +95,7 @@ const schema = defineSchema(
       .index("by_slug", ["slug"])
       .index("by_published", ["isPublished"]),
   },
-  {
-    schemaValidation: false,
-  },
+  { schemaValidation: false },
 );
 
 export default schema;
