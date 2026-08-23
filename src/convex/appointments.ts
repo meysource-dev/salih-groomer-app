@@ -67,11 +67,17 @@ export const listByUser = query({
     const results = [];
     for (const apt of appointments) {
       const services = [];
-      for (const sid of apt.serviceIds) {
-        const svc = await ctx.db.get(sid);
+      const sids = (apt as any).serviceIds || (apt as any).serviceId ? [(apt as any).serviceId] : [];
+      if (Array.isArray((apt as any).serviceIds)) {
+        for (const sid of (apt as any).serviceIds) {
+          const svc = await ctx.db.get(sid);
+          if (svc) services.push(svc);
+        }
+      } else if ((apt as any).serviceId) {
+        const svc = await ctx.db.get((apt as any).serviceId);
         if (svc) services.push(svc);
       }
-      results.push({ ...apt, services });
+      results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
     }
     return results;
   },
@@ -88,11 +94,16 @@ export const listAll = query({
     const results = [];
     for (const apt of appointments) {
       const services = [];
-      for (const sid of apt.serviceIds) {
-        const svc = await ctx.db.get(sid);
+      if (Array.isArray((apt as any).serviceIds)) {
+        for (const sid of (apt as any).serviceIds) {
+          const svc = await ctx.db.get(sid);
+          if (svc) services.push(svc);
+        }
+      } else if ((apt as any).serviceId) {
+        const svc = await ctx.db.get((apt as any).serviceId);
         if (svc) services.push(svc);
       }
-      results.push({ ...apt, services });
+      results.push({ ...apt, services, totalPrice: (apt as any).totalPrice || (apt as any).price || 0 });
     }
     return results;
   },
