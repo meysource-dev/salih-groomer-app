@@ -72,12 +72,10 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: easeOut }} className="flex justify-center order-1 md:order-2">
             <div className="relative">
               <div className="w-72 h-72 md:w-96 md:h-96 rounded-[2rem] overflow-hidden clay-card p-2">
-                <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-gradient-to-br from-primary/10 to-amber-100/50 relative">
+                <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
                   <img src="/saleh.jpg" alt="صالح گرومر" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center hidden">
-                    <PawPrint className="w-20 h-20 text-primary/30 mb-3" />
-                    <span className="text-primary/40 font-bold text-sm">صالح گرومر</span>
-                    <span className="text-primary/25 text-xs mt-1">گرومر حرفه‌ای حیوانات</span>
+                  <div className="absolute inset-0 hidden">
+                    <img src="/hero-illustration.svg" alt="صالح گرومر - گرومینگ حیوانات" className="w-full h-full object-contain" />
                   </div>
                 </div>
               </div>
