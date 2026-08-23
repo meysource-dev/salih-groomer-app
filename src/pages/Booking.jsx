@@ -76,6 +76,16 @@ export default function Booking() {
     selectedDate ? { date: selectedDate } : "skip"
   );
   const workingDays = useQuery(api.workingDays.listActive);
+  const selectedDayOfWeek = useMemo(() => {
+    if (!selectedDate) return null;
+    const [y, m, d] = selectedDate.split("-").map(Number);
+    const g = new Date(y, m - 1, d);
+    return (g.getDay() + 1) % 7;
+  }, [selectedDate]);
+  const timeSlots = useQuery(
+    api.workingDays.getSlotsForDay,
+    selectedDayOfWeek !== null ? { dayOfWeek: selectedDayOfWeek } : "skip"
+  );
 
   const daysInMonth = useMemo(() => jalaliDaysInMonth(viewYear, viewMonth), [viewYear, viewMonth]);
   const startDay = useMemo(() => getFirstDayOfWeekJalali(viewYear, viewMonth), [viewYear, viewMonth]);
@@ -261,15 +271,19 @@ export default function Booking() {
                 <h3 className="font-bold">ساعت‌های قابل رزرو</h3>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                {["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"].map((time) => {
-                  const isBooked = bookedSlots?.some((s) => s.time === time);
-                  return (
-                    <button key={time} onClick={() => !isBooked && setSelectedTime(time)} disabled={isBooked}
-                      className={`py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${isBooked ? "bg-muted/50 text-muted-foreground/40 cursor-not-allowed line-through" : selectedTime === time ? "bg-primary text-primary-foreground shadow-md" : "clay-card hover:bg-secondary/50"}`}>
-                      {toPersianDigits(time)}
-                    </button>
-                  );
-                })}
+                {(timeSlots || []).length === 0 ? (
+                  <p className="col-span-full text-center text-muted-foreground text-sm py-4">ساعتی برای این روز تعریف نشده</p>
+                ) : (
+                  (timeSlots || []).map((time) => {
+                    const isBooked = bookedSlots?.some((s) => s.time === time);
+                    return (
+                      <button key={time} onClick={() => !isBooked && setSelectedTime(time)} disabled={isBooked}
+                        className={`py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${isBooked ? "bg-muted/50 text-muted-foreground/40 cursor-not-allowed line-through" : selectedTime === time ? "bg-primary text-primary-foreground shadow-md" : "clay-card hover:bg-secondary/50"}`}>
+                        {toPersianDigits(time)}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </motion.div>
           )}

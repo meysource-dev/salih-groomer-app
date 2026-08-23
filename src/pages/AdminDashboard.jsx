@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, LogOut, CalendarCheck, CheckCircle, XCircle, Hourglass, PawPrint, Loader2, DollarSign, Image, Plus, Trash2, Settings, X, Upload, BarChart3, Filter, CalendarDays } from "lucide-react";
+import { Shield, LogOut, CalendarCheck, CheckCircle, XCircle, Hourglass, PawPrint, Loader2, DollarSign, Image, Plus, Trash2, Settings, X, Upload, BarChart3, Filter, CalendarDays, ChevronDown, Clock } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const SALON_PERCENTAGE = 50;
@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [filterPetType, setFilterPetType] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [incomePeriod, setIncomePeriod] = useState("all");
+  const [expandedDay, setExpandedDay] = useState(null);
 
   const appointments = useQuery(api.appointments.listAll, {
     petType: filterPetType || undefined,
@@ -40,12 +41,13 @@ export default function AdminDashboard() {
   const removePortfolio = useMutation(api.portfolio.remove);
   const generateUploadUrl = useMutation(api.portfolio.generateUploadUrl);
   const workingDays = useQuery(api.workingDays.listAll);
-  const setWorkingDayActive = useMutation(api.workingDays.setActive);
+  const updateDay = useMutation(api.workingDays.updateDay);
 
   const [adminName, setAdminName] = useState("");
   const [activeTab, setActiveTab] = useState("appointments");
   const [editingPrice, setEditingPrice] = useState(null);
   const [newPrice, setNewPrice] = useState("");
+  const [dayEdits, setDayEdits] = useState({});
 
   // Portfolio modal state
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
@@ -71,13 +73,13 @@ export default function AdminDashboard() {
     navigate("/admin/login");
   };
 
-  // Income calculation with period filtering and salon cut
+  // Income: only from completed appointments
   const incomeStats = useMemo(() => {
     if (!appointments) return { gross: 0, net: 0, count: 0 };
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-    let filtered = appointments.filter((a) => a.status !== "cancelled");
+    let filtered = appointments.filter((a) => a.status === "completed");
 
     if (incomePeriod === "today") {
       filtered = filtered.filter((a) => a.date === today);
@@ -110,6 +112,34 @@ export default function AdminDashboard() {
     await updatePrice({ id: serviceId, price });
     setEditingPrice(null);
     setNewPrice("");
+  };
+
+  const handleDayToggle = async (day) => {
+    const edit = dayEdits[day.dayOfWeek] || {};
+    await updateDay({
+      dayOfWeek: day.dayOfWeek,
+      isActive: !day.isActive,
+      startTime: edit.startTime || day.startTime || "09:00",
+      endTime: edit.endTime || day.endTime || "18:00",
+    });
+  };
+
+  const handleDayTimeSave = async (dayOfWeek) => {
+    const edit = dayEdits[dayOfWeek] || {};
+    const day = workingDays?.find((d) => d.dayOfWeek === dayOfWeek);
+    await updateDay({
+      dayOfWeek,
+      isActive: day?.isActive ?? true,
+      startTime: edit.startTime || day?.startTime || "09:00",
+      endTime: edit.endTime || day?.endTime || "18:00",
+    });
+  };
+
+  const updateDayEdit = (dayOfWeek, field, value) => {
+    setDayEdits((prev) => ({
+      ...prev,
+      [dayOfWeek]: { ...(prev[dayOfWeek] || {}), [field]: value },
+    }));
   };
 
   const handleFileSelect = (e) => {
@@ -174,7 +204,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: "appointments", label: "نوبت‌ها", icon: CalendarCheck },
-    { id: "income", label: "درآمد", icon: BarChart3 },
+    { id: "income", label: "درآمد گرومر", icon: BarChart3 },
     { id: "services", label: "قیمت خدمات", icon: DollarSign },
     { id: "portfolio", label: "نمونه کار", icon: Image },
     { id: "workingDays", label: "روزهای کاری", icon: CalendarDays },
@@ -307,9 +337,9 @@ export default function AdminDashboard() {
         {/* ========== Income Tab ========== */}
         {activeTab === "income" && (
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5" /> گزارش درآمد</h2>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5" /> درآمد گرومر</h2>
+            <p className="text-sm text-muted-foreground mb-4">فقط نوبت‌های انجام شده در درآمد لحاظ می‌شوند</p>
 
-            {/* Period selector */}
             <div className="flex gap-2 mb-6 flex-wrap">
               {[["all", "کل"], ["today", "امروز"], ["month", "این ماه"], ["3months", "۳ ماه اخیر"], ["6months", "۶ ماه اخیر"]].map(([key, label]) => (
                 <button key={key} onClick={() => setIncomePeriod(key)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${incomePeriod === key ? "bg-primary text-primary-foreground shadow-md" : "clay-card hover:bg-secondary/50"}`}>
@@ -318,22 +348,16 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Income cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="clay-card p-6 text-center">
-                <div className="text-sm text-muted-foreground mb-1">درآمد ناخالص</div>
+                <div className="text-sm text-muted-foreground mb-1">درآمد کل (ناخالص)</div>
                 <div className="text-2xl font-black text-primary">{toPersianDigits(incomeStats.gross.toLocaleString())} تومان</div>
-                <div className="text-xs text-muted-foreground mt-1">{incomeStats.count} نوبت</div>
+                <div className="text-xs text-muted-foreground mt-1">{incomeStats.count} نوبت انجام شده</div>
               </div>
               <div className="clay-card p-6 text-center">
-                <div className="text-sm text-muted-foreground mb-1">درآمد خالص (پس از کسورات)</div>
+                <div className="text-sm text-muted-foreground mb-1">درآمد خالص گرومر (پس از کسورات)</div>
                 <div className="text-2xl font-black text-emerald-600">{toPersianDigits(incomeStats.net.toLocaleString())} تومان</div>
-                <div className="text-xs text-muted-foreground mt-1">(%{SALON_PERCENTAGE} سهم سالن)</div>
-              </div>
-              <div className="clay-card p-6 text-center">
-                <div className="text-sm text-muted-foreground mb-1">سهم گرومر</div>
-                <div className="text-2xl font-black text-amber-600">{toPersianDigits((incomeStats.gross - incomeStats.net).toLocaleString())} تومان</div>
-                <div className="text-xs text-muted-foreground mt-1">(%{100 - SALON_PERCENTAGE} سهم گرومر)</div>
+                <div className="text-xs text-muted-foreground mt-1">%{SALON_PERCENTAGE} سهم سالن کسر شده</div>
               </div>
             </div>
           </div>
@@ -391,7 +415,7 @@ export default function AdminDashboard() {
                 {portfolio.map((item) => (
                   <div key={item._id} className="clay-card overflow-hidden">
                     <div className="aspect-square overflow-hidden bg-gradient-to-br from-primary/5 to-amber-50">
-                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.target.src = ""; e.target.style.display = "none"; }} />
+                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
                     </div>
                     <div className="p-3">
                       <div className="font-bold text-sm">{item.title}</div>
@@ -416,16 +440,96 @@ export default function AdminDashboard() {
         {activeTab === "workingDays" && (
           <div>
             <h2 className="text-lg font-bold mb-2 flex items-center gap-2"><CalendarDays className="w-5 h-5" /> روزهای کاری</h2>
-            <p className="text-sm text-muted-foreground mb-6">روزهایی که می‌خواهید خدمات ارائه دهید را انتخاب کنید. روزهای غیرفعال در تقویم رزرو نمایش داده نمی‌شوند.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {workingDays && workingDays.map((day) => (
-                <button key={day.dayOfWeek} onClick={() => setWorkingDayActive({ dayOfWeek: day.dayOfWeek, isActive: !day.isActive })}
-                  className={`clay-card p-4 text-center font-bold transition-all ${day.isActive ? "bg-primary/10 ring-2 ring-primary text-primary" : "bg-muted/30 text-muted-foreground opacity-60"}`}>
-                  <div className="text-lg mb-1">{day.isActive ? "✅" : "❌"}</div>
-                  <div>{jalaliDayNames[day.dayOfWeek]}</div>
-                  <div className="text-xs mt-1">{day.isActive ? "فعال" : "غیرفعال"}</div>
-                </button>
-              ))}
+            <p className="text-sm text-muted-foreground mb-6">روزهای فعال را انتخاب کنید و ساعت شروع و پایان شیفت را تعیین کنید. سیستم به صورت خودکار شیفت‌ها را بر اساس ۳ ساعت گرومینگ و ۳۰ دقیقه استراحت محاسبه می‌کند.</p>
+
+            <div className="space-y-3">
+              {workingDays && workingDays.map((day) => {
+                const isExpanded = expandedDay === day.dayOfWeek;
+                const edit = dayEdits[day.dayOfWeek] || {};
+                const start = edit.startTime ?? day.startTime ?? "09:00";
+                const end = edit.endTime ?? day.endTime ?? "18:00";
+
+                return (
+                  <div key={day.dayOfWeek} className={`clay-card overflow-hidden transition-all ${day.isActive ? "" : "opacity-50"}`}>
+                    {/* Day header - clickable */}
+                    <button onClick={() => setExpandedDay(isExpanded ? null : day.dayOfWeek)}
+                      className="w-full flex items-center justify-between p-4 text-right">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${day.isActive ? "bg-primary/15" : "bg-muted/50"}`}>
+                          {day.isActive ? <CheckCircle className="w-5 h-5 text-primary" /> : <XCircle className="w-5 h-5 text-muted-foreground" />}
+                        </div>
+                        <div className="text-left">
+                          <div className="font-bold">{jalaliDayNames[day.dayOfWeek]}</div>
+                          {day.isActive && (
+                            <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> {toPersianDigits(start)} تا {toPersianDigits(end)}
+                              {day.generatedSlots?.length > 0 && <span className="text-primary">• {toPersianDigits(day.generatedSlots.length)} شیفت</span>}
+                            </div>
+                          )}
+                          {!day.isActive && <div className="text-xs text-red-400 mt-0.5">تعطیل</div>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); handleDayToggle(day); }}
+                          className={`relative w-12 h-6 rounded-full transition-colors ${day.isActive ? "bg-primary" : "bg-muted"}`}>
+                          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${day.isActive ? "right-0.5" : "right-[26px]"}`} />
+                        </button>
+                        <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      </div>
+                    </button>
+
+                    {/* Expanded: time config + generated slots */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                          <div className="px-4 pb-4 border-t border-border/30">
+                            <div className="flex flex-wrap items-center gap-4 mt-3 mb-3">
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs font-bold">شروع شیفت از ساعت:</label>
+                                <input type="time" value={start} onChange={(e) => updateDayEdit(day.dayOfWeek, "startTime", e.target.value)}
+                                  className="clay-input px-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs font-bold">تا ساعت:</label>
+                                <input type="time" value={end} onChange={(e) => updateDayEdit(day.dayOfWeek, "endTime", e.target.value)}
+                                  className="clay-input px-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                              </div>
+                              <button onClick={() => handleDayTimeSave(day.dayOfWeek)} className="clay-btn bg-emerald-600 text-white px-4 py-1.5 text-xs font-bold">
+                                ذخیره ساعت
+                              </button>
+                            </div>
+
+                            {/* Generated time slots */}
+                            {day.generatedSlots && day.generatedSlots.length > 0 && (
+                              <div className="mt-2">
+                                <div className="text-xs font-bold text-muted-foreground mb-2">شیفت‌های ایجاد شده (هر شیفت ۳ ساعت + ۳۰ دقیقه استراحت):</div>
+                                <div className="flex flex-wrap gap-2">
+                                  {day.generatedSlots.map((slot, i) => {
+                                    const [h, m] = slot.split(":").map(Number);
+                                    const endMin = h * 60 + m + 180;
+                                    const endH = Math.floor(endMin / 60);
+                                    const endM = endMin % 60;
+                                    const endStr = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+                                    return (
+                                      <div key={slot} className="clay-card px-3 py-2 text-xs font-bold text-primary bg-primary/5 rounded-lg">
+                                        🕐 {toPersianDigits(slot)} — {toPersianDigits(endStr)}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {day.isActive && day.generatedSlots?.length === 0 && (
+                              <p className="text-xs text-amber-600 mt-2">ساعت انتخابی برای ایجاد شیفت ۳ ساعته کافی نیست</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

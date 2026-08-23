@@ -43,6 +43,8 @@ const schema = defineSchema(
     working_days: defineTable({
       dayOfWeek: v.number(), // 0=Saturday ... 6=Friday (Jalali week)
       isActive: v.boolean(),
+      startTime: v.optional(v.string()), // e.g. "09:00"
+      endTime: v.optional(v.string()),   // e.g. "18:00"
     }).index("by_dayOfWeek", ["dayOfWeek"]),
 
     appointments: defineTable({
