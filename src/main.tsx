@@ -16,6 +16,7 @@ const Booking = lazy(() => import("./pages/Booking.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Portfolio = lazy(() => import("./pages/Portfolio.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+import Navbar from "@/components/Navbar";
 
 function RouteLoading() {
   return <div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
@@ -67,13 +68,13 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<><Navbar /><Landing /></>} />
               <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
               <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
               <Route path="/booking" element={<RequireAuth><Booking /></RequireAuth>} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/contact" element={<><Navbar /><Contact /></>} />
+              <Route path="/portfolio" element={<><Navbar /><Portfolio /></>} />
+              <Route path="*" element={<><Navbar /><NotFound /></>} />
             </Routes>
           </Suspense>
         </BrowserRouter>
