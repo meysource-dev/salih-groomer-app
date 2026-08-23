@@ -29,9 +29,10 @@ export default function Landing() {
   const portfolio = useQuery(api.portfolio.listPublished);
 
   return (
-    <div className="min-h-screen overflow-hidden" dir="rtl">
+    <div className="min-h-screen overflow-hidden" dir="rtl" itemScope itemType="https://schema.org/WebPage">
+      <header>
       {/* Hero */}
-      <section className="hero-section">
+      <section className="hero-section" itemProp="mainContentOfPage">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="deco-blob deco-blob-1 animate-float-slow" />
           <div className="deco-blob deco-blob-2 animate-float" />
@@ -77,8 +78,9 @@ export default function Landing() {
         </div>
       </section>
 
+      <article itemProp="mainContentOfPage">
       {/* Services */}
-      <section id="services" className="page-section-lg px-4">
+      <section id="services" className="page-section-lg px-4" itemProp="about">
         <div className="page-container">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-black mb-2">خدمات <span className="text-gradient-primary">ما</span></h2>
@@ -132,8 +134,10 @@ export default function Landing() {
         </div>
       </section>}
 
+      </article>
+
       {/* CTA */}
-      <section className="page-section-lg px-4">
+      <section className="page-section-lg px-4" itemProp="potentialAction" itemScope itemType="https://schema.org/ReserveAction">
         <div className="page-container max-w-3xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} custom={0} className="clay-card cta-card p-8 md:p-12 text-center relative">
             <div className="relative z-10">
@@ -148,8 +152,11 @@ export default function Landing() {
         </div>
       </section>
 
+      </header>
+
+      <main>
       {/* Footer */}
-      <footer className="footer px-4">
+      <footer className="footer px-4" itemProp="footer">
         <div className="page-container">
           <div className="footer-grid">
             <div>
@@ -181,6 +188,7 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+      </main>
     </div>
   );
 }
