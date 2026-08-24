@@ -1,4 +1,10 @@
 .env.local
+.env
+.env.*
+!env.example
 node_modules
 dist
 src/convex/_generated
+*.log
+.DS_Store
+isolate
