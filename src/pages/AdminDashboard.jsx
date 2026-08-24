@@ -59,17 +59,28 @@ export default function AdminDashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
+  const [adminToken, setAdminToken] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     const name = localStorage.getItem("admin_name");
     if (!token) { navigate("/admin/login"); return; }
+    setAdminToken(token);
     setAdminName(name || "Admin");
   }, [navigate]);
 
   const handleLogout = () => {
+    // Call server-side logout to invalidate session
+    if (adminToken) {
+      import("convex/react").then(({ useMutation })) => {
+        // Fire and forget
+        fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
+      });
+    }
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_name");
+    sessionStorage.removeItem("admin_token");
+    sessionStorage.removeItem("admin_name");
     navigate("/admin/login");
   };
 
@@ -109,30 +120,50 @@ export default function AdminDashboard() {
   const handlePriceSave = async (serviceId) => {
     const price = Number(newPrice);
     if (isNaN(price) || price < 0) return;
-    await updatePrice({ id: serviceId, price });
-    setEditingPrice(null);
-    setNewPrice("");
+    try {
+      await updatePrice({ id: serviceId, price, token: adminToken });
+      setEditingPrice(null);
+      setNewPrice("");
+    } catch (err) {
+      if (err?.message?.includes("غیرمجاز") || err?.message?.includes("منقضی")) {
+        handleLogout();
+      }
+    }
   };
 
   const handleDayToggle = async (day) => {
     const edit = dayEdits[day.dayOfWeek] || {};
-    await updateDay({
-      dayOfWeek: day.dayOfWeek,
-      isActive: !day.isActive,
-      startTime: edit.startTime || day.startTime || "09:00",
-      endTime: edit.endTime || day.endTime || "18:00",
-    });
+    try {
+      await updateDay({
+        token: adminToken,
+        dayOfWeek: day.dayOfWeek,
+        isActive: !day.isActive,
+        startTime: edit.startTime || day.startTime || "09:00",
+        endTime: edit.endTime || day.endTime || "18:00",
+      });
+    } catch (err) {
+      if (err?.message?.includes("غیرمجاز") || err?.message?.includes("منقضی")) {
+        handleLogout();
+      }
+    }
   };
 
   const handleDayTimeSave = async (dayOfWeek) => {
     const edit = dayEdits[dayOfWeek] || {};
     const day = workingDays?.find((d) => d.dayOfWeek === dayOfWeek);
-    await updateDay({
-      dayOfWeek,
-      isActive: day?.isActive ?? true,
-      startTime: edit.startTime || day?.startTime || "09:00",
-      endTime: edit.endTime || day?.endTime || "18:00",
-    });
+    try {
+      await updateDay({
+        token: adminToken,
+        dayOfWeek,
+        isActive: day?.isActive ?? true,
+        startTime: edit.startTime || day?.startTime || "09:00",
+        endTime: edit.endTime || day?.endTime || "18:00",
+      });
+    } catch (err) {
+      if (err?.message?.includes("غیرمجاز") || err?.message?.includes("منقضی")) {
+        handleLogout();
+      }
+    }
   };
 
   const updateDayEdit = (dayOfWeek, field, value) => {
@@ -161,7 +192,7 @@ export default function AdminDashboard() {
     setIsUploading(true);
     setUploadError("");
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl({ token: adminToken });
       const result = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": portfolioFile.type },
@@ -170,6 +201,7 @@ export default function AdminDashboard() {
       if (!result.ok) throw new Error("خطا در آپلود");
       const { storageId } = await result.json();
       await createPortfolio({
+        token: adminToken,
         title: portfolioTitle,
         description: portfolioDesc || undefined,
         imageUrl: storageId,
@@ -184,6 +216,9 @@ export default function AdminDashboard() {
       setPortfolioPreview(null);
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "خطا در آپلود");
+      if (err?.message?.includes("غیرمجاز") || err?.message?.includes("منقضی")) {
+        handleLogout();
+      }
     } finally {
       setIsUploading(false);
     }
@@ -191,7 +226,13 @@ export default function AdminDashboard() {
 
   const handleDeletePortfolio = async (id) => {
     if (confirm("آیا از حذف این نمونه مطمئن هستید؟")) {
-      await removePortfolio({ id });
+      try {
+        await removePortfolio({ id, token: adminToken });
+      } catch (err) {
+        if (err?.message?.includes("غیرمجاز") || err?.message?.includes("منقضی")) {
+          handleLogout();
+        }
+      }
     }
   };
 
@@ -318,7 +359,7 @@ export default function AdminDashboard() {
                             <StatusIcon className="w-3 h-3" />
                             {status.label}
                           </div>
-                          <select value={apt.status} onChange={(e) => updateStatus({ id: apt._id, status: e.target.value })} className="text-xs border border-border rounded-lg px-2 py-1 bg-background">
+                          <select value={apt.status} onChange={(e) => updateStatus({ id: apt._id, status: e.target.value, token: adminToken })} className="text-xs border border-border rounded-lg px-2 py-1 bg-background">
                             <option value="pending">در انتظار</option>
                             <option value="confirmed">تأیید</option>
                             <option value="completed">انجام شده</option>

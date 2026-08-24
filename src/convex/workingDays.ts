@@ -4,6 +4,26 @@ import { v } from "convex/values";
 const DEFAULT_START = "09:00";
 const DEFAULT_END = "18:00";
 
+// Helper to verify admin token
+async function requireAdminToken(ctx: any, token: string) {
+  const session = await ctx.db
+    .query("admin_sessions")
+    .withIndex("by_token", (q: any) => q.eq("token", token))
+    .first();
+  if (!session) {
+    throw new Error("غیرمجاز: لطفاً وارد شوید");
+  }
+  if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) {
+    await ctx.db.delete(session._id);
+    throw new Error("جلسه منقضی شده");
+  }
+  const admin = await ctx.db.get(session.adminId);
+  if (!admin || !admin.isActive) {
+    throw new Error("حساب مدیر غیرفعال است");
+  }
+  return admin;
+}
+
 // Public: get active working days
 export const listActive = query({
   args: {},
@@ -97,15 +117,37 @@ export const listAll = query({
   },
 });
 
-// Admin: set working day status and times
+// Admin: set working day status and times — REQUIRES ADMIN TOKEN
 export const updateDay = mutation({
   args: {
+    token: v.string(),
     dayOfWeek: v.number(),
     isActive: v.boolean(),
     startTime: v.optional(v.string()),
     endTime: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAdminToken(ctx, args.token);
+
+    // Validate dayOfWeek
+    if (args.dayOfWeek < 0 || args.dayOfWeek > 6) {
+      throw new Error("روز هفته نامعتبر است");
+    }
+
+    // Validate time format
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (args.startTime && !timeRegex.test(args.startTime)) {
+      throw new Error("ساعت شروع نامعتبر است");
+    }
+    if (args.endTime && !timeRegex.test(args.endTime)) {
+      throw new Error("ساعت پایان نامعتبر است");
+    }
+
+    // Validate start < end
+    if (args.startTime && args.endTime && args.startTime >= args.endTime) {
+      throw new Error("ساعت شروع باید قبل از ساعت پایان باشد");
+    }
+
     const existing = await ctx.db
       .query("working_days")
       .withIndex("by_dayOfWeek", (q) => q.eq("dayOfWeek", args.dayOfWeek))

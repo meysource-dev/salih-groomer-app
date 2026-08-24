@@ -1,6 +1,27 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+// Helper to verify admin token
+async function requireAdminToken(ctx: any, token: string) {
+  const session = await ctx.db
+    .query("admin_sessions")
+    .withIndex("by_token", (q: any) => q.eq("token", token))
+    .first();
+  if (!session) {
+    throw new Error("غیرمجاز: لطفاً وارد شوید");
+  }
+  // Check expiry (24h)
+  if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) {
+    await ctx.db.delete(session._id);
+    throw new Error("جلسه منقضی شده. لطفاً دوباره وارد شوید");
+  }
+  const admin = await ctx.db.get(session.adminId);
+  if (!admin || !admin.isActive) {
+    throw new Error("حساب مدیر غیرفعال است");
+  }
+  return admin;
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -25,21 +46,29 @@ export const get = query({
   },
 });
 
-// Admin: update service price
+// Admin: update service price — REQUIRES ADMIN TOKEN
 export const updatePrice = mutation({
   args: {
     id: v.id("services"),
     price: v.number(),
+    token: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, { price: args.price });
+    await requireAdminToken(ctx, args.token);
+
+    if (typeof args.price !== "number" || args.price < 0 || args.price > 50000000) {
+      throw new Error("قیمت نامعتبر است");
+    }
+
+    await ctx.db.patch(args.id, { price: Math.round(args.price) });
   },
 });
 
-// Admin: update service
+// Admin: update service — REQUIRES ADMIN TOKEN
 export const update = mutation({
   args: {
     id: v.id("services"),
+    token: v.string(),
     name: v.optional(v.string()),
     description: v.optional(v.string()),
     price: v.optional(v.number()),
@@ -47,7 +76,17 @@ export const update = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { id, ...fields } = args;
+    await requireAdminToken(ctx, args.token);
+    const { id, token, ...fields } = args;
+
+    // Validate fields
+    if (fields.price !== undefined && (fields.price < 0 || fields.price > 50000000)) {
+      throw new Error("قیمت نامعتبر است");
+    }
+    if (fields.duration !== undefined && (fields.duration < 5 || fields.duration > 600)) {
+      throw new Error("مدت زمان نامعتبر است");
+    }
+
     await ctx.db.patch(id, fields);
   },
 });

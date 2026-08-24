@@ -22,6 +22,15 @@ const schema = defineSchema(
       isActive: v.boolean(),
     }).index("by_username", ["username"]),
 
+    // Admin sessions for proper auth
+    admin_sessions: defineTable({
+      token: v.string(),
+      adminId: v.id("admin_users"),
+      createdAt: v.number(),
+    })
+      .index("by_token", ["token"])
+      .index("by_adminId", ["adminId"]),
+
     services: defineTable({
       name: v.string(),
       nameEn: v.string(),
@@ -72,6 +81,13 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_status", ["status"])
       .index("by_petType", ["petType"]),
+
+    // Rate limiting for booking
+    booking_rate_limits: defineTable({
+      phone: v.string(),
+      date: v.number(), // timestamp of the day
+      count: v.number(),
+    }).index("by_phone_date", ["phone", "date"]),
 
     portfolio: defineTable({
       title: v.string(),
